@@ -10,11 +10,15 @@ interface ConversationResponse {
   nextCursor: string
 }
 
+import { ToolCallInfo } from "@/api/LLM"
+
 export interface OptimisticMemory extends Memory {
   isOptimistic?: boolean
   // Progressive image generation support
   generatedImagePartial?: string
   generatedImageURL?: string
+  // Tool call streaming support
+  toolCalls?: ToolCallInfo[]
 }
 
 type InfiniteQueryResult = ReturnType<
@@ -36,6 +40,7 @@ interface ConversationContextType {
   setOptimisticPairID: (tempId: string, realId: string) => void
   setImagePartial: (pairId: string, index: number, b64: string) => void
   setImageCompleted: (pairId: string, url: string) => void
+  setToolCalls: (pairId: string, toolCalls: ToolCallInfo[]) => void
   cancelPrompt: () => Promise<boolean>
 }
 
@@ -137,12 +142,37 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setOptimisticMessage((prev) => {
       if (!prev || prev.id !== pairId) return prev
 
-      const currentContent = (prev.output || [])[0]?.content || ""
-      const newContent = currentContent + responseChunk
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
 
+      // If no output yet, create first text content
+      if (currentOutput.length === 0) {
+        return {
+          ...prev,
+          output: [{ type: "text" as const, content: responseChunk }],
+        }
+      }
+
+      // If last item is text, append to it
+      if (currentOutput[lastIndex]?.type === "text") {
+        const updatedOutput = [...currentOutput]
+        updatedOutput[lastIndex] = {
+          ...updatedOutput[lastIndex],
+          content: updatedOutput[lastIndex].content + responseChunk,
+        }
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      }
+
+      // If last item is not text (e.g., tool call), append new text content
       return {
         ...prev,
-        output: [{ type: "text" as const, content: newContent }],
+        output: [
+          ...currentOutput,
+          { type: "text" as const, content: responseChunk },
+        ],
       }
     })
   }
@@ -210,6 +240,18 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const setToolCalls = (pairId: string, toolCalls: ToolCallInfo[]) => {
+    if (!pairId || !toolCalls) return
+    setOptimisticMessage((prev) => {
+      if (!prev || prev.id !== pairId) return prev
+
+      return {
+        ...prev,
+        toolCalls: [...(prev.toolCalls || []), ...toolCalls],
+      }
+    })
+  }
+
   // Cancel the current prompt streaming request
   const cancelPrompt = async (): Promise<boolean> => {
     return await cancelPromptLLMV2()
@@ -230,6 +272,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setOptimisticPairID,
     setImagePartial,
     setImageCompleted,
+    setToolCalls,
     cancelPrompt,
   }
 

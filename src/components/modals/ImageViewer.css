@@ -1,3 +1,18 @@
+/* Media Viewer Container - supports all media types */
+.media-viewer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  touch-action: none; /* Prevent browser touch actions for better control */
+  user-select: none; /* Prevent text selection during drag */
+}
+
+/* Legacy support */
 .image-viewer-container {
   display: flex;
   justify-content: center;
@@ -114,5 +129,246 @@
   .image-control-button {
     width: 2.75rem;
     height: 2.75rem;
+  }
+}
+
+/* ===== MEDIA VIEWER CONTENT ===== */
+
+.media-viewer-content {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  will-change: transform;
+  transform-origin: center;
+}
+
+/* ===== PDF VIEWER ===== */
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+/* ===== AUDIO PLAYER ===== */
+
+.audio-player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.audio-player-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.audio-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  color: white;
+}
+
+.audio-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.audio-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.audio-progress::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.audio-time {
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.audio-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+}
+
+/* ===== VIDEO PLAYER ===== */
+
+.video-player {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+
+/* ===== MEDIA CONTROL BUTTONS ===== */
+
+.media-viewer-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.media-control-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 3rem;
+  height: 3rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Audio specific controls */
+.media-control-button.play-pause {
+  width: 4rem;
+  height: 4rem;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.media-control-button.play-pause:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Desktop hover effects */
+@media (hover: hover) {
+  .media-control-button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .media-viewer-container.is-zoomed {
+    cursor: grab;
+  }
+
+  .media-viewer-container.is-zoomed:active {
+    cursor: grabbing;
+  }
+}
+
+/* Mobile touch effects */
+.media-control-button:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+/* For larger screens */
+@media (min-width: 769px) {
+  .media-viewer-controls {
+    bottom: 1.5rem;
+    padding: 0.85rem;
+    gap: 1rem;
+  }
+
+  .media-control-button {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .audio-player-container {
+    max-width: 600px;
+    padding: 2.5rem;
+  }
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .media-viewer-controls {
+    padding: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .media-control-button {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .audio-player-container {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .audio-player-controls {
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 374px) {
+  .media-viewer-controls {
+    padding: 0.6rem;
+    gap: 0.4rem;
+  }
+
+  .media-control-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .audio-player-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .audio-player-controls {
+    padding: 1rem;
+    gap: 1rem;
   }
 }

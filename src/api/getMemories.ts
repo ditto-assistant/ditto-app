@@ -8,13 +8,22 @@ export type ContentTypeV2 =
   | "application/pdf"
   | "audio/wav"
   | "audio/mp3"
+  | "tool_call"
+
+export interface ToolCallData {
+  id: string
+  name: string
+  args: Record<string, unknown>
+}
 
 export interface ContentV2 {
   type: ContentTypeV2
   content: string
   // optional fields present in some tool/file responses
-  toolCall?: Record<string, unknown>
+  toolCall?: ToolCallData
   annotations?: unknown
+  id?: string
+  originalFilename?: string
 }
 
 export interface Memory {

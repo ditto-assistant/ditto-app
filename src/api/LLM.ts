@@ -20,6 +20,13 @@ export interface PromptV2Content {
   content: string
 }
 
+// Tool call information for streaming
+export interface ToolCallInfo {
+  id: string
+  name: string
+  args: Record<string, unknown>
+}
+
 // Cancel an active prompt streaming request
 export async function cancelPromptLLMV2(): Promise<boolean> {
   try {
@@ -60,6 +67,7 @@ export async function promptV2BackendBuild(opts: {
   onPairID?: (pairID: string) => void
   onImagePartial?: (index: number, b64: string) => void
   onImageCompleted?: (url: string) => void
+  onToolCalls?: (toolCalls: ToolCallInfo[]) => void
   personalitySummary: string
   memoryStats?: string
 }): Promise<string> {
@@ -124,6 +132,14 @@ export async function promptV2BackendBuild(opts: {
               // Backend sends: EventContent{Data: {"url": "..."}} -> {"data": {"url": "..."}}
               const url = String(eventData?.data?.url || "")
               if (url) opts.onImageCompleted?.(url)
+              break
+
+            case "tool.calls":
+              // Backend sends: EventContent{Data: [ToolCallInfo]} -> {"data": [{"id": "...", "name": "...", "args": {...}}]}
+              const toolCalls: ToolCallInfo[] = Array.isArray(eventData?.data)
+                ? eventData.data
+                : []
+              if (toolCalls.length > 0) opts.onToolCalls?.(toolCalls)
               break
 
             case "error":

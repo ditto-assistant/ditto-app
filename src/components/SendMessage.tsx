@@ -20,7 +20,7 @@ import {
   cancelPromptLLMV2,
   type PromptV2Content,
 } from "@/api/LLM"
-import { uploadImage } from "@/api/userContent"
+import { uploadImage, uploadFile } from "@/api/userContent"
 import { PersonalityStorage } from "@/lib/personalityStorage"
 import { cn } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/lib/haptics"
@@ -159,8 +159,11 @@ export default function SendMessage({
       }
     ) => {
       const uploadedImageURIs: string[] = []
-      const uploadedDocURIs: string[] = []
-      const uploadedAudioURIs: string[] = []
+      const uploadedDocURIs: { url: string; originalFilename: string }[] = []
+      const uploadedAudioURIs: { url: string; originalFilename: string }[] = []
+
+      // Track filenames to prevent duplicates within this chat
+      const uploadedFilenames = new Set<string>()
 
       if (fileArrays.images.length > 0) {
         setIsUploading(true)
@@ -179,9 +182,20 @@ export default function SendMessage({
         setIsUploading(true)
         try {
           for (const doc of fileArrays.documents) {
-            const res = await uploadImage(userID, doc)
+            // Check for duplicate filename
+            if (uploadedFilenames.has(doc.name)) {
+              throw new Error(
+                `File "${doc.name}" has already been uploaded in this chat`
+              )
+            }
+            uploadedFilenames.add(doc.name)
+
+            const res = await uploadFile(userID, doc, "gallery")
             if (res instanceof Error) throw res
-            uploadedDocURIs.push(res)
+            uploadedDocURIs.push({
+              url: res.downloadURL,
+              originalFilename: res.filename,
+            })
           }
         } finally {
           setIsUploading(false)
@@ -191,10 +205,21 @@ export default function SendMessage({
       if (fileArrays.audios.length > 0) {
         setIsUploading(true)
         try {
-          for (const a of fileArrays.audios) {
-            const res = await uploadImage(userID, a)
+          for (const audio of fileArrays.audios) {
+            // Check for duplicate filename
+            if (uploadedFilenames.has(audio.name)) {
+              throw new Error(
+                `File "${audio.name}" has already been uploaded in this chat`
+              )
+            }
+            uploadedFilenames.add(audio.name)
+
+            const res = await uploadFile(userID, audio, "audio")
             if (res instanceof Error) throw res
-            uploadedAudioURIs.push(res)
+            uploadedAudioURIs.push({
+              url: res.downloadURL,
+              originalFilename: res.filename,
+            })
           }
         } finally {
           setIsUploading(false)
@@ -268,13 +293,15 @@ export default function SendMessage({
           ...uploadedImageURIs
             .slice(1)
             .map((u) => ({ type: "image" as const, content: u })),
-          ...uploadedDocURIs.map((u) => ({
+          ...uploadedDocURIs.map(({ url, originalFilename }) => ({
             type: "application/pdf" as const,
-            content: u,
+            content: url,
+            originalFilename,
           })),
-          ...uploadedAudioURIs.map((u) => ({
+          ...uploadedAudioURIs.map(({ url, originalFilename }) => ({
             type: "audio/mp3" as const,
-            content: u,
+            content: url,
+            originalFilename,
           })),
         ]
 
@@ -308,6 +335,8 @@ export default function SendMessage({
             setImagePartial(optimisticMessageId, index, b64),
           onImageCompleted: (url) =>
             setImageCompleted(optimisticMessageId, url),
+          onToolCalls: (toolCalls) =>
+            setToolCalls(optimisticMessageId, toolCalls),
           personalitySummary: PersonalityStorage.getPersonalitySummary(userID),
           memoryStats: stringifyTopSubjects(memoryStats.topSubjects),
         })
@@ -788,22 +817,23 @@ export default function SendMessage({
               id="audio-upload"
               type="file"
               multiple
-              accept="audio/wav, audio/mp3, audio/mpeg"
+              accept="audio/wav, audio/x-wav, audio/mp3, audio/mpeg, audio/mp4"
               style={{ display: "none" }}
               onChange={handleAudioUpload}
             />
           </>
         )}
 
-        {/* Image previews */}
-        {images.length > 0 && (
-          <div className="absolute bottom-full left-3 mb-3 flex gap-2">
+        {/* Media previews */}
+        {(images.length > 0 || documents.length > 0 || audios.length > 0) && (
+          <div className="absolute bottom-full left-3 mb-3 flex gap-2 flex-wrap max-w-[calc(100vw-2rem)]">
+            {/* Image previews */}
             {images.map((img, idx) => {
               const imageUrl =
                 typeof img === "string" ? img : URL.createObjectURL(img)
               return (
                 <div
-                  key={idx}
+                  key={`img-${idx}`}
                   className="bg-background/85 backdrop-blur-md rounded-md flex items-center shadow-md border border-border overflow-hidden cursor-pointer relative"
                   onClick={() => handleImagePreviewClick(imageUrl)}
                 >
@@ -823,6 +853,48 @@ export default function SendMessage({
                 </div>
               )
             })}
+
+            {/* PDF previews */}
+            {documents.map((doc, idx) => (
+              <div
+                key={`doc-${idx}`}
+                className="bg-background/85 backdrop-blur-md rounded-md flex items-center justify-center shadow-md border border-border overflow-hidden relative w-12 h-12"
+              >
+                <FileText className="w-6 h-6 text-muted-foreground" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 hover:bg-background/80 text-foreground/80"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDocuments((prev) => prev.filter((_, i) => i !== idx))
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+
+            {/* Audio previews */}
+            {audios.map((audio, idx) => (
+              <div
+                key={`audio-${idx}`}
+                className="bg-background/85 backdrop-blur-md rounded-md flex items-center justify-center shadow-md border border-border overflow-hidden relative w-12 h-12"
+              >
+                <AudioLines className="w-6 h-6 text-muted-foreground" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-6 w-6 rounded-full bg-background/50 hover:bg-background/80 text-foreground/80"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setAudios((prev) => prev.filter((_, i) => i !== idx))
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </form>

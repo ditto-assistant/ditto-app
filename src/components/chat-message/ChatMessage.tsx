@@ -38,6 +38,8 @@ interface ChatMessageProps {
   // Progressive image rendering
   imagePartial?: string
   imageURL?: string
+  // Tool call streaming support
+  toolCalls?: import("@/api/LLM").ToolCallInfo[]
   // v2 content arrays (already presigned by backend)
   inputParts?: ContentV2[]
   outputParts?: ContentV2[]
@@ -55,6 +57,7 @@ export default function ChatMessage({
   hideActions = {},
   imagePartial,
   imageURL,
+  toolCalls,
   inputParts,
   outputParts,
 }: ChatMessageProps) {
@@ -133,6 +136,33 @@ export default function ChatMessage({
                     draggable={false}
                   />
                 )}
+
+                {/* Tool calls from streaming */}
+                {toolCalls && toolCalls.length > 0 && (
+                  <div className="mb-2 space-y-2">
+                    {toolCalls.map((toolCall, index) => (
+                      <div
+                        key={`${toolCall.id}-${index}`}
+                        className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-border"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Tool Call:
+                          </span>
+                          <span className="text-sm font-mono bg-background px-2 py-0.5 rounded border">
+                            {toolCall.name}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground w-full">
+                          <pre className="whitespace-pre-wrap break-words">
+                            {JSON.stringify(toolCall.args, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <MarkdownRenderer>{content}</MarkdownRenderer>
               </div>
             )}

@@ -1,30 +1,104 @@
 import { useState, useRef, useEffect } from "react"
 import { useImageViewer } from "@/hooks/useImageViewer"
-import { Download, ZoomIn, ZoomOut, RotateCcw } from "lucide-react"
+import {
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Play,
+  Pause,
+  Volume2,
+} from "lucide-react"
 import Modal from "@/components/modals/Modal"
 import { HapticPattern, triggerHaptic } from "@/lib/haptics"
 import { Button } from "@/components/ui/button"
 import "./ImageViewer.css"
 
+type MediaType = "image" | "pdf" | "audio" | "video"
+
+interface MediaViewerProps {
+  url: string
+  type: MediaType
+  filename?: string
+}
+
 export default function ImageViewer() {
-  const { imageUrl } = useImageViewer()
+  const { mediaUrl } = useImageViewer()
+
+  // Determine media type from URL
+  const getMediaType = (url: string): MediaType => {
+    if (url.toLowerCase().includes(".pdf")) return "pdf"
+    if (url.toLowerCase().match(/\.(mp3|wav|ogg|flac|m4a)$/)) return "audio"
+    if (url.toLowerCase().match(/\.(mp4|webm|avi)$/)) return "video"
+    return "image"
+  }
+
+  const mediaType = getMediaType(mediaUrl)
+
+  return (
+    <MediaViewer
+      url={mediaUrl}
+      type={mediaType}
+      filename={(() => {
+        const baseFilename = mediaUrl.split("/").pop()?.split("?")[0] || "file"
+        // Strip timestamp prefix (everything before first underscore for uploaded files)
+        const parts = baseFilename.split("_")
+        if (parts.length > 1 && /^\d{19}$/.test(parts[0])) {
+          // Check if first part is a 19-digit timestamp
+          return parts.slice(1).join("_")
+        }
+        return baseFilename
+      })()}
+    />
+  )
+}
+
+function MediaViewer({ url, type, filename }: MediaViewerProps) {
   const [controlsVisible, setControlsVisible] = useState(true)
   const [scale, setScale] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+
   const imageRef = useRef<HTMLImageElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Reset zoom and position when image changes
+  // Reset zoom and position when media changes
   useEffect(() => {
     setScale(1)
     setPosition({ x: 0, y: 0 })
-  }, [imageUrl])
+    setIsPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+  }, [url])
+
+  // Audio event handlers
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio || type !== "audio") return
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    const handleLoadedMetadata = () => setDuration(audio.duration)
+    const handleEnded = () => setIsPlaying(false)
+
+    audio.addEventListener("timeupdate", handleTimeUpdate)
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata)
+    audio.addEventListener("ended", handleEnded)
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate)
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
+      audio.removeEventListener("ended", handleEnded)
+    }
+  }, [type, url])
 
   const handleDownload = () => {
     triggerHaptic(HapticPattern.Medium)
-    window.open(imageUrl, "_blank")
+    window.open(url, "_blank")
   }
 
   const toggleControls = (e: React.MouseEvent) => {
@@ -33,8 +107,8 @@ export default function ImageViewer() {
     // Check if click was on a control button
     const target = e.target as HTMLElement
     if (
-      target.closest(".image-viewer-controls") ||
-      target.closest(".image-control-button")
+      target.closest(".media-viewer-controls") ||
+      target.closest(".media-control-button")
     ) {
       return // Don't toggle if clicking on controls
     }
@@ -42,6 +116,34 @@ export default function ImageViewer() {
     e.stopPropagation()
     triggerHaptic(HapticPattern.Light)
     setControlsVisible((prev) => !prev)
+  }
+
+  // Audio controls
+  const handlePlayPause = () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isPlaying) {
+      audio.pause()
+    } else {
+      audio.play()
+    }
+    setIsPlaying(!isPlaying)
+  }
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const newTime = (parseFloat(e.target.value) / 100) * duration
+    audio.currentTime = newTime
+    setCurrentTime(newTime)
+  }
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
   }
 
   // Download button for the header
@@ -181,47 +283,198 @@ export default function ImageViewer() {
     }
   }
 
+  const renderMediaContent = () => {
+    switch (type) {
+      case "pdf":
+        return (
+          <div
+            className="pdf-container"
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <object
+              style={{
+                flex: 1,
+                border: "none",
+              }}
+              data={url}
+              type="application/pdf"
+              className="media-viewer-content pdf-viewer"
+              title={`PDF: ${filename}`}
+            >
+              <iframe
+                src={url}
+                className="media-viewer-content pdf-viewer"
+                title={`PDF: ${filename}`}
+                style={{
+                  flex: 1,
+                  border: "none",
+                }}
+              >
+                <div style={{ padding: "20px", textAlign: "center" }}>
+                  <p>Unable to display PDF inline.</p>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#007bff", textDecoration: "underline" }}
+                  >
+                    Click here to download and view the PDF
+                  </a>
+                </div>
+              </iframe>
+            </object>
+          </div>
+        )
+
+      case "audio":
+        return (
+          <div className="audio-player-container">
+            <audio
+              ref={audioRef}
+              src={url}
+              preload="metadata"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+            />
+            <div className="audio-player-controls">
+              <button
+                className="media-control-button play-pause"
+                onClick={handlePlayPause}
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+              </button>
+
+              <div className="audio-progress-container">
+                <span className="audio-time">{formatTime(currentTime)}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={duration ? (currentTime / duration) * 100 : 0}
+                  onChange={handleSeek}
+                  className="audio-progress"
+                />
+                <span className="audio-time">{formatTime(duration)}</span>
+              </div>
+
+              <div className="audio-info">
+                <Volume2 size={16} />
+                <span>{filename}</span>
+              </div>
+            </div>
+          </div>
+        )
+
+      case "video":
+        return (
+          <video
+            src={url}
+            controls
+            className="media-viewer-content video-player"
+            preload="metadata"
+          />
+        )
+
+      default: // image
+        return (
+          <>
+            <img
+              ref={imageRef}
+              src={url}
+              alt="Media preview"
+              className="media-viewer-content image-viewer-img"
+              style={{
+                transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+                transition: isDragging ? "none" : "transform 0.2s ease",
+                maxWidth: scale <= 1 ? "100%" : "none",
+                maxHeight: scale <= 1 ? "100%" : "none",
+              }}
+            />
+            {controlsVisible && (
+              <div className="media-viewer-controls">
+                <button
+                  className="media-control-button zoom-in"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleZoomIn()
+                  }}
+                  title="Zoom In"
+                >
+                  <ZoomIn size={18} />
+                </button>
+                <button
+                  className="media-control-button zoom-out"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleZoomOut()
+                  }}
+                  title="Zoom Out"
+                >
+                  <ZoomOut size={18} />
+                </button>
+                <button
+                  className="media-control-button reset"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleReset()
+                  }}
+                  title="Reset View"
+                >
+                  <RotateCcw size={18} />
+                </button>
+              </div>
+            )}
+          </>
+        )
+    }
+  }
+
+  const canZoom = type === "image"
+  const showZoomControls = canZoom && controlsVisible
+
   return (
     <Modal
       id="imageViewer"
-      title="Preview"
+      title={`${type.charAt(0).toUpperCase() + type.slice(1)} Preview`}
       headerRightContent={HeaderDownloadButton}
     >
       <div
-        className={`image-viewer-container ${scale > 1 ? "is-zoomed" : ""}`}
+        className={`media-viewer-container ${type} ${scale > 1 ? "is-zoomed" : ""}`}
         ref={containerRef}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleDragEnd}
-        onMouseLeave={handleDragEnd}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleDragEnd}
+        onWheel={canZoom ? handleWheel : undefined}
+        onMouseDown={canZoom ? handleMouseDown : undefined}
+        onMouseMove={canZoom ? handleMouseMove : undefined}
+        onMouseUp={canZoom ? handleDragEnd : undefined}
+        onMouseLeave={canZoom ? handleDragEnd : undefined}
+        onTouchStart={canZoom ? handleTouchStart : undefined}
+        onTouchMove={canZoom ? handleTouchMove : undefined}
+        onTouchEnd={canZoom ? handleDragEnd : undefined}
         onClick={toggleControls}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={canZoom ? handleDoubleClick : undefined}
         style={{
-          cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "default",
+          cursor: canZoom
+            ? isDragging
+              ? "grabbing"
+              : scale > 1
+                ? "grab"
+                : "default"
+            : "default",
         }}
       >
-        <img
-          ref={imageRef}
-          src={imageUrl}
-          alt="Image preview"
-          className="image-viewer-img"
-          style={{
-            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-            transition: isDragging ? "none" : "transform 0.2s ease",
-            maxWidth: scale <= 1 ? "100%" : "none",
-            maxHeight: scale <= 1 ? "100%" : "none",
-          }}
-        />
-        {controlsVisible && (
-          <div className="image-viewer-controls">
+        {renderMediaContent()}
+
+        {showZoomControls && (
+          <div className="media-viewer-controls">
             <button
-              className="image-control-button zoom-in"
+              className="media-control-button zoom-in"
               onClick={(e) => {
-                e.stopPropagation() // Prevent event propagation
+                e.stopPropagation()
                 handleZoomIn()
               }}
               title="Zoom In"
@@ -229,9 +482,9 @@ export default function ImageViewer() {
               <ZoomIn size={18} />
             </button>
             <button
-              className="image-control-button zoom-out"
+              className="media-control-button zoom-out"
               onClick={(e) => {
-                e.stopPropagation() // Prevent event propagation
+                e.stopPropagation()
                 handleZoomOut()
               }}
               title="Zoom Out"
@@ -239,9 +492,9 @@ export default function ImageViewer() {
               <ZoomOut size={18} />
             </button>
             <button
-              className="image-control-button reset"
+              className="media-control-button reset"
               onClick={(e) => {
-                e.stopPropagation() // Prevent event propagation
+                e.stopPropagation()
                 handleReset()
               }}
               title="Reset View"

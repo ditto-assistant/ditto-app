@@ -6,6 +6,19 @@ import { BASE_URL, routes } from "@/firebaseConfig"
 export const UploadImageResponseSchema = z.string()
 export type UploadImageResponse = z.infer<typeof UploadImageResponseSchema>
 
+export const UploadFileResponseSchema = z.object({
+  fileID: z.string(),
+  downloadURL: z.string(),
+  fileURL: z.string(),
+  filename: z.string(),
+  contentType: z.string(),
+  originalType: z.string(),
+  size: z.number(),
+  expiration: z.string(),
+  converted: z.boolean(),
+})
+export type UploadFileResponse = z.infer<typeof UploadFileResponseSchema>
+
 export const PresignedUploadResponseSchema = z.object({
   uploadURL: z.string(),
   fileURL: z.string(),
@@ -98,6 +111,58 @@ export async function createPresignedUpload(
     return validatedData.data
   } catch (error) {
     console.error("Error creating presigned upload URL:", error)
+    return error instanceof Error ? error : new Error("Unknown error occurred")
+  }
+}
+
+/**
+ * Upload a file with full processing and return detailed response
+ */
+export async function uploadFile(
+  userID: string,
+  fileData: File,
+  subfolder?: string
+): Promise<UploadFileResponse | Error> {
+  try {
+    const tok = await getToken()
+    if (tok.err) {
+      return new Error(tok.err?.message ?? "No token")
+    }
+    if (!tok.ok) {
+      return new Error("No token")
+    }
+
+    const formData = new FormData()
+    formData.append("file", fileData)
+    if (subfolder) {
+      formData.append("subfolder", subfolder)
+    }
+
+    const response = await fetch(`${BASE_URL}/api/v2/users/${userID}/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return new Error(
+        `Failed to upload file: HTTP ${response.status} - ${errorText}`
+      )
+    }
+
+    const data = await response.json()
+    const validatedData = UploadFileResponseSchema.safeParse(data)
+    if (!validatedData.success) {
+      console.error("Validation error:", validatedData.error)
+      return new Error("Invalid response from server")
+    }
+
+    return validatedData.data
+  } catch (error) {
+    console.error("Error uploading file:", error)
     return error instanceof Error ? error : new Error("Unknown error occurred")
   }
 }

@@ -1183,6 +1183,7 @@ const ChatFeed: React.FC = () => {
                       isOptimistic={message.isOptimistic}
                       imagePartial={message.generatedImagePartial}
                       imageURL={message.generatedImageURL}
+                      toolCalls={message.toolCalls}
                       menuProps={{
                         id: message.id,
                         onCopy: () => handleCopy(message, "response"),
