@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { debounce } from "perfect-debounce"
 import {
   BarChart3,
   Brain,
@@ -19,6 +20,7 @@ import { toast } from "sonner"
 import ChatMessage from "@/components/chat-message/ChatMessage"
 import MemoryCard from "@/components/MemoryCard"
 import { Memory } from "@/api/getMemories"
+import { MOBILE_CLICK_DEBOUNCE_MS } from "@/constants"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useTheme } from "@/components/theme-provider"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
@@ -393,48 +395,61 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
   const isFittingRef = useRef<boolean>(false)
   const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Mobile touch handling state
-  const [lastTouchTime, setLastTouchTime] = useState(0)
-  const [isProcessingClick, setIsProcessingClick] = useState(false)
-
   const handleNodeClick = useCallback(
     (nodeId: string) => {
-      console.log("Node clicked:", nodeId)
-
-      // Mobile touch debouncing to prevent double-clicks
-      const isMobile = window.innerWidth <= 768
-      const now = Date.now()
-
-      if (isMobile) {
-        // Prevent rapid successive clicks on mobile
-        if (now - lastTouchTime < 500 || isProcessingClick) {
-          console.log("Mobile: Ignoring rapid click/double-tap")
+      const processNodeClick = (nodeId: string) => {
+        // Handle root node click
+        if (nodeId === rootNodeConfig.id && onRootNodeClick) {
+          if (isMobile) {
+            // Add extra delay on mobile to ensure modal renders properly
+            setTimeout(() => onRootNodeClick(), 100)
+          } else {
+            onRootNodeClick()
+          }
           return
         }
-        setLastTouchTime(now)
-        setIsProcessingClick(true)
 
-        // Reset processing flag after a delay
-        setTimeout(() => setIsProcessingClick(false), 600)
-      }
+        // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
+        if (nodeId.startsWith("shared-subject-")) {
+          // Find the subject in our subject map (more reliable than searching pairDetails)
+          const foundSubject = subjectMapRef.current.get(nodeId)
 
-      // Handle root node click
-      if (nodeId === rootNodeConfig.id && onRootNodeClick) {
-        if (isMobile) {
-          // Add extra delay on mobile to ensure modal renders properly
-          setTimeout(() => onRootNodeClick(), 100)
-        } else {
-          onRootNodeClick()
+          if (foundSubject) {
+            // Get canvas position for modal placement
+            const canvas = containerRef.current?.querySelector("canvas")
+            if (canvas && networkRef.current) {
+              const canvasPosition = canvas.getBoundingClientRect()
+              const nodePosition = networkRef.current.getPositions([nodeId])[
+                nodeId
+              ]
+
+              if (nodePosition) {
+                // Convert network coordinates to screen coordinates
+                const scale = networkRef.current.getScale()
+                const viewPosition = networkRef.current.getViewPosition()
+
+                const screenX =
+                  canvasPosition.left +
+                  (nodePosition.x - viewPosition.x) * scale +
+                  canvasPosition.width / 2
+                const screenY =
+                  canvasPosition.top +
+                  (nodePosition.y - viewPosition.y) * scale +
+                  canvasPosition.height / 2
+
+                setSelectedKeySubject({
+                  subject: foundSubject,
+                  position: { x: screenX, y: screenY },
+                })
+              }
+            }
+          }
+          return
         }
-        return
-      }
 
-      // Check if this is a subject node (nodeId format: "shared-subject-subjectId")
-      if (nodeId.startsWith("shared-subject-")) {
-        // Find the subject in our subject map (more reliable than searching pairDetails)
-        const foundSubject = subjectMapRef.current.get(nodeId)
-
-        if (foundSubject) {
+        // Check if this is a memory node
+        const memory = memoryMapRef.current.get(nodeId)
+        if (memory && "prompt" in memory) {
           // Get canvas position for modal placement
           const canvas = containerRef.current?.querySelector("canvas")
           if (canvas && networkRef.current) {
@@ -457,48 +472,29 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                 (nodePosition.y - viewPosition.y) * scale +
                 canvasPosition.height / 2
 
-              setSelectedKeySubject({
-                subject: foundSubject,
+              setSelectedNodeForModal({
+                memory: memory as Memory,
                 position: { x: screenX, y: screenY },
               })
             }
           }
         }
-        return
       }
 
-      // Check if this is a memory node
-      const memory = memoryMapRef.current.get(nodeId)
-      if (memory && "prompt" in memory) {
-        // Get canvas position for modal placement
-        const canvas = containerRef.current?.querySelector("canvas")
-        if (canvas && networkRef.current) {
-          const canvasPosition = canvas.getBoundingClientRect()
-          const nodePosition = networkRef.current.getPositions([nodeId])[nodeId]
-
-          if (nodePosition) {
-            // Convert network coordinates to screen coordinates
-            const scale = networkRef.current.getScale()
-            const viewPosition = networkRef.current.getViewPosition()
-
-            const screenX =
-              canvasPosition.left +
-              (nodePosition.x - viewPosition.x) * scale +
-              canvasPosition.width / 2
-            const screenY =
-              canvasPosition.top +
-              (nodePosition.y - viewPosition.y) * scale +
-              canvasPosition.height / 2
-
-            setSelectedNodeForModal({
-              memory: memory as Memory,
-              position: { x: screenX, y: screenY },
-            })
-          }
-        }
+      if (isMobile) {
+        // Use debounced handler for mobile to prevent double-clicks
+        const debouncedMobileClick = debounce((nodeId: string) => {
+          console.log("Node clicked (mobile):", nodeId)
+          processNodeClick(nodeId)
+        }, MOBILE_CLICK_DEBOUNCE_MS)
+        debouncedMobileClick(nodeId)
+      } else {
+        // Process immediately for desktop
+        console.log("Node clicked (desktop):", nodeId)
+        processNodeClick(nodeId)
       }
     },
-    [rootNodeConfig.id, onRootNodeClick, lastTouchTime, isProcessingClick]
+    [isMobile, rootNodeConfig.id, onRootNodeClick]
   )
 
   // Network building effect - simplified and stable
