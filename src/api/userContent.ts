@@ -10,7 +10,8 @@ export const UploadFileResponseSchema = z.object({
   fileID: z.string(),
   downloadURL: z.string(),
   fileURL: z.string(),
-  filename: z.string(),
+  filename: z.string(), // Original filename for display
+  sanitizedFilename: z.string(), // Sanitized filename for storage
   contentType: z.string(),
   originalType: z.string(),
   size: z.number(),

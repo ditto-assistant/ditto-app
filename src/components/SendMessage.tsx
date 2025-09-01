@@ -31,7 +31,7 @@ import { useBalance } from "@/hooks/useBalance"
 import { useMemoryStats, stringifyTopSubjects } from "@/hooks/useMemoryStats"
 import { useComposeContext } from "@/contexts/ComposeContext"
 import { useConversationHistory } from "@/hooks/useConversationHistory"
-import { useImageViewer } from "@/hooks/useImageViewer"
+import { useMediaViewer } from "@/hooks/useImageViewer"
 import { useModal } from "@/hooks/useModal"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { usePlatform } from "@/hooks/usePlatform"
@@ -81,7 +81,7 @@ export default function SendMessage({
   const [isUploading, setIsUploading] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const preferences = useModelPreferences()
-  const { setImageUrl } = useImageViewer()
+  const { setMediaUrl } = useMediaViewer()
   const balance = useBalance()
   const { isMobile, isIOS, isPWA, safeAreaBottom } = usePlatform()
 
@@ -92,6 +92,7 @@ export default function SendMessage({
     setOptimisticPairID,
     setImagePartial,
     setImageCompleted,
+    setToolCalls,
   } = useConversationHistory()
   const {
     message,
@@ -140,10 +141,8 @@ export default function SendMessage({
   const handleStopGeneration = useCallback(() => {
     if (isWaitingForResponse) {
       console.log("🛑 [SendMessage] Stopping response generation")
-      const wasCancelled = cancelPromptLLMV2()
-      if (wasCancelled) {
-        toast.info("Response generation stopped")
-      }
+      cancelPromptLLMV2()
+      toast.info("Response generation stopped")
       setIsWaitingForResponse(false)
       onStop()
     }
@@ -277,22 +276,17 @@ export default function SendMessage({
         setDocuments([])
         setAudios([])
 
-        if (process.env.NODE_ENV === "development") {
-          console.log("🚀 [SendMessage] Creating optimistic message")
+        // Construct complete input array for optimistic display
+        const optimisticInput: PromptV2Content[] = []
+        if (message.trim().length > 0) {
+          optimisticInput.push({ type: "text", content: message })
         }
-        const optimisticMessageId = addOptimisticMessage(
-          message,
-          uploadedImageURIs[0] || ""
-        )
-
-        const streamingCallback = (chunk: string) => {
-          updateOptimisticResponse(optimisticMessageId, chunk)
-        }
-
-        const extraInput = [
-          ...uploadedImageURIs
-            .slice(1)
-            .map((u) => ({ type: "image" as const, content: u })),
+        // Add all uploaded content (images, PDFs, audio files, etc.)
+        optimisticInput.push(
+          ...uploadedImageURIs.map((u) => ({
+            type: "image" as const,
+            content: u,
+          })),
           ...uploadedDocURIs.map(({ url, originalFilename }) => ({
             type: "application/pdf" as const,
             content: url,
@@ -302,8 +296,17 @@ export default function SendMessage({
             type: "audio/mp3" as const,
             content: url,
             originalFilename,
-          })),
-        ]
+          }))
+        )
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("🚀 [SendMessage] Creating optimistic message")
+        }
+        const optimisticMessageId = addOptimisticMessage(optimisticInput)
+
+        const streamingCallback = (chunk: string) => {
+          updateOptimisticResponse(optimisticMessageId, chunk)
+        }
 
         // Build input array per backend types.Content
         const input: PromptV2Content[] = []
@@ -316,12 +319,23 @@ export default function SendMessage({
         if (message.trim().length > 0) {
           input.push({ type: "text", content: message })
         }
-        if (uploadedImageURIs[0]) {
-          input.push({ type: "image", content: uploadedImageURIs[0] })
-        }
-        if (extraInput && extraInput.length > 0) {
-          input.push(...extraInput)
-        }
+        // Add all uploaded content (images, PDFs, audio files, etc.)
+        input.push(
+          ...uploadedImageURIs.map((u) => ({
+            type: "image" as const,
+            content: u,
+          })),
+          ...uploadedDocURIs.map(({ url, originalFilename }) => ({
+            type: "application/pdf" as const,
+            content: url,
+            originalFilename,
+          })),
+          ...uploadedAudioURIs.map(({ url, originalFilename }) => ({
+            type: "audio/mp3" as const,
+            content: url,
+            originalFilename,
+          }))
+        )
 
         let pairID = optimisticMessageId
         const final = await promptV2BackendBuild({
@@ -526,10 +540,10 @@ export default function SendMessage({
 
   const handleImagePreviewClick = useCallback(
     (imageUrl: string) => {
-      setImageUrl(imageUrl)
+      setMediaUrl(imageUrl)
       modal.createOpenHandler("imageViewer")()
     },
-    [setImageUrl, modal]
+    [setMediaUrl, modal]
   )
 
   const createImageClearHandler = useCallback(

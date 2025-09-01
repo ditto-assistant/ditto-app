@@ -3,7 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useAuth, useAuthToken } from "./useAuth"
 import { BASE_URL } from "@/firebaseConfig"
 import { Memory } from "@/api/getMemories"
-import { cancelPromptLLMV2 } from "@/api/LLM"
+import { cancelPromptLLMV2, type PromptV2Content } from "@/api/LLM"
 
 interface ConversationResponse {
   items: Memory[]
@@ -12,7 +12,7 @@ interface ConversationResponse {
 
 import { ToolCallInfo } from "@/api/LLM"
 
-export interface OptimisticMemory extends Memory {
+export interface OptimisticMemory extends Omit<Memory, "prompt" | "response"> {
   isOptimistic?: boolean
   // Progressive image generation support
   generatedImagePartial?: string
@@ -33,7 +33,7 @@ interface ConversationContextType {
   hasNextPage: InfiniteQueryResult["hasNextPage"]
   fetchNextPage: InfiniteQueryResult["fetchNextPage"]
   refetch: InfiniteQueryResult["refetch"]
-  addOptimisticMessage: (userPrompt: string, imageURL?: string) => string
+  addOptimisticMessage: (input: PromptV2Content[]) => string
   updateOptimisticResponse: (pairId: string, responseChunk: string) => void
   finalizeOptimisticMessage: (pairId: string, finalResponse: string) => void
   clearOptimisticMessages: () => void
@@ -104,33 +104,20 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       : serverMessages
 
   // Add a new optimistic message pair (user prompt + empty assistant response)
-  const addOptimisticMessage = (
-    userPrompt: string,
-    imageURL?: string
-  ): string => {
+  const addOptimisticMessage = (input: PromptV2Content[]): string => {
     const timestamp = Date.now()
     const tempPairId = `optimistic-${timestamp}`
 
     const newOptimisticMessage: OptimisticMemory = {
       id: tempPairId,
-      // Legacy fields for backward compatibility
-      prompt: userPrompt,
-      response: "",
-      // New v2 structure
-      input: [{ type: "text" as const, content: userPrompt }],
+      // New v2 structure only
+      input: input,
       output: [],
       timestamp: new Date(timestamp),
       isOptimistic: true,
       score: 0,
       vector_distance: 0,
       depth: 0,
-    }
-
-    if (imageURL) {
-      newOptimisticMessage.input?.push({
-        type: "image" as const,
-        content: imageURL,
-      })
     }
 
     setOptimisticMessage(newOptimisticMessage)
