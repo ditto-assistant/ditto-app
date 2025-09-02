@@ -22,7 +22,7 @@ import {
 } from "@/api/LLM"
 import { uploadImage, uploadFile } from "@/api/userContent"
 import { PersonalityStorage } from "@/lib/personalityStorage"
-import { cn } from "@/lib/utils"
+import { cn, validateFileSizeCallback } from "@/lib/utils"
 import { HapticPattern, triggerHaptic } from "@/lib/haptics"
 import { DEFAULT_MODELS, FREE_MODEL_ID } from "@/constants"
 import { ErrorPaymentRequired } from "@/types/errors"
@@ -407,6 +407,7 @@ export default function SendMessage({
       setOptimisticPairID,
       setImagePartial,
       setImageCompleted,
+      setToolCalls,
       triggerSync,
       onStop,
     ]
@@ -426,7 +427,12 @@ export default function SendMessage({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files
       if (!files || files.length === 0) return
-      setImages((prev) => [...prev, ...Array.from(files)])
+
+      // Validate file sizes before adding
+      const validFiles = Array.from(files).filter(validateFileSizeCallback)
+      if (validFiles.length > 0) {
+        setImages((prev) => [...prev, ...validFiles])
+      }
     },
     []
   )
@@ -435,7 +441,12 @@ export default function SendMessage({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files
       if (!files || files.length === 0) return
-      setDocuments((prev) => [...prev, ...Array.from(files)])
+
+      // Validate file sizes before adding
+      const validFiles = Array.from(files).filter(validateFileSizeCallback)
+      if (validFiles.length > 0) {
+        setDocuments((prev) => [...prev, ...validFiles])
+      }
     },
     []
   )
@@ -444,7 +455,12 @@ export default function SendMessage({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files
       if (!files || files.length === 0) return
-      setAudios((prev) => [...prev, ...Array.from(files)])
+
+      // Validate file sizes before adding
+      const validFiles = Array.from(files).filter(validateFileSizeCallback)
+      if (validFiles.length > 0) {
+        setAudios((prev) => [...prev, ...validFiles])
+      }
     },
     []
   )
@@ -493,9 +509,13 @@ export default function SendMessage({
       if (items[i].type.indexOf("image") !== -1) {
         const blob = items[i].getAsFile()
         if (blob) {
-          setImages((prev) => [blob, ...prev])
-          event.preventDefault()
-          break
+          // Create a File object with a default name for validation
+          const file = new File([blob], "pasted-image.png", { type: blob.type })
+          if (validateFileSizeCallback(file)) {
+            setImages((prev) => [file, ...prev])
+            event.preventDefault()
+            break
+          }
         }
       }
     }
