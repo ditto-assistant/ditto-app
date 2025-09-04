@@ -1606,13 +1606,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                           }}
                           menuProps={{
                             id: memory.id,
-                            onCopy: () => {
-                              navigator.clipboard.writeText(memory.prompt || "")
-                              toast.success("Copied to clipboard")
-                            },
-                            onDelete: () => {
-                              // Handle delete if needed
-                            },
                             onShowMemories: () => {
                               // Handle show memories if needed
                             },
@@ -1630,15 +1623,6 @@ const MemoriesNetworkGraph: React.FC<MemoriesNetworkGraphProps> = ({
                           }}
                           menuProps={{
                             id: memory.id,
-                            onCopy: () => {
-                              navigator.clipboard.writeText(
-                                memory.response || ""
-                              )
-                              toast.success("Copied to clipboard")
-                            },
-                            onDelete: () => {
-                              // Handle delete if needed
-                            },
                             onShowMemories: () => {
                               // Handle show memories if needed
                             },

@@ -9,11 +9,8 @@ import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 export default function MemoryNodeModal() {
   const { nodeData, onDelete, hideMemoryNode } = useMemoryNodeViewer()
   const { showMemoryNetwork } = useMemoryNetwork()
+  const isRootNode = nodeData?.depth === 0
 
-  // Determine if this is the root node
-  const isRootNode = nodeData?.level === 0 || nodeData?.depth === 0
-
-  // Handle deletion with error handling
   const handleDelete = () => {
     try {
       if (nodeData && typeof onDelete === "function") {
@@ -26,14 +23,6 @@ export default function MemoryNodeModal() {
     }
   }
 
-  // Handle copying message content
-  const handleCopy = (content: string) => {
-    navigator.clipboard
-      .writeText(content)
-      .then(() => toast.success("Copied to clipboard"))
-      .catch(() => toast.error("Failed to copy to clipboard"))
-  }
-
   return (
     <Modal id="memoryNodeViewer" title={isRootNode ? "Your Prompt" : "Memory"}>
       <div className="flex flex-col h-full w-full overflow-hidden relative">
@@ -44,16 +33,10 @@ export default function MemoryNodeModal() {
                 {/* User prompt message */}
                 <ChatMessage
                   content={nodeData.prompt || "No prompt content available"}
-                  timestamp={
-                    nodeData.timestamp
-                      ? new Date(nodeData.timestamp)
-                      : new Date()
-                  }
+                  timestamp={nodeData.timestamp}
                   isUser={true}
                   menuProps={{
                     id: nodeData.id,
-                    onCopy: () => handleCopy(nodeData.prompt || ""),
-                    onDelete: handleDelete,
                     onShowMemories: () => showMemoryNetwork(nodeData),
                   }}
                 />
@@ -61,16 +44,10 @@ export default function MemoryNodeModal() {
                 {/* Response message */}
                 <ChatMessage
                   content={nodeData.response || "No response content available"}
-                  timestamp={
-                    nodeData.timestamp
-                      ? new Date(nodeData.timestamp)
-                      : new Date()
-                  }
+                  timestamp={nodeData.timestamp}
                   isUser={false}
                   menuProps={{
                     id: nodeData.id,
-                    onCopy: () => handleCopy(nodeData.response || ""),
-                    onDelete: handleDelete,
                     onShowMemories: () => showMemoryNetwork(nodeData),
                   }}
                 />

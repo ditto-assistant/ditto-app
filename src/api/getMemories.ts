@@ -29,8 +29,8 @@ export interface ContentV2 {
 export interface Memory {
   id: string
   score: number
-  prompt: string
-  response: string
+  prompt?: string
+  response?: string
   timestamp: Date
   vector_distance: number
   depth: number

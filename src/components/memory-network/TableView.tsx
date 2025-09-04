@@ -53,13 +53,7 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
   }
 
   const handleViewMemory = (memory: Memory) => {
-    showMemoryNode(
-      {
-        ...memory,
-        level: 0,
-      },
-      handleDelete
-    )
+    showMemoryNode(memory, handleDelete)
   }
 
   const getMemoryTreeCount = (memory: Memory): number => {
@@ -143,31 +137,19 @@ const TableView: React.FC<TableViewProps> = ({ memories }) => {
           <div className="memory-node-messages">
             <ChatMessage
               content={memory.prompt}
-              timestamp={
-                memory.timestamp instanceof Date
-                  ? memory.timestamp.getTime()
-                  : Date.now()
-              }
+              timestamp={memory.timestamp}
               isUser={true}
               menuProps={{
                 id: memory.id,
-                onCopy: () => navigator.clipboard.writeText(memory.prompt),
-                onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),
               }}
             />
             <ChatMessage
               content={memory.response}
-              timestamp={
-                memory.timestamp instanceof Date
-                  ? memory.timestamp.getTime()
-                  : Date.now()
-              }
+              timestamp={memory.timestamp}
               isUser={false}
               menuProps={{
                 id: memory.id,
-                onCopy: () => navigator.clipboard.writeText(memory.response),
-                onDelete: () => handleDelete(memory),
                 onShowMemories: () => handleViewMemory(memory),
               }}
             />

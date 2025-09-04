@@ -9,17 +9,11 @@ import {
 import { useModal } from "./useModal"
 import { Memory } from "@/api/getMemories"
 
-// Just add level field for nodes that may not have it
-export interface MemoryWithLevel extends Memory {
-  level?: number
-  nodeId?: string
-}
-
 interface MemoryNodeViewerContextType {
-  nodeData: MemoryWithLevel | null
-  setNodeData: (data: MemoryWithLevel | null) => void
-  onDelete?: (node: MemoryWithLevel) => void
-  setOnDelete: (callback: ((node: MemoryWithLevel) => void) | undefined) => void
+  nodeData: Memory | null
+  setNodeData: (data: Memory | null) => void
+  onDelete?: (node: Memory) => void
+  setOnDelete: (callback: ((node: Memory) => void) | undefined) => void
 }
 
 const MemoryNodeViewerContext = createContext<
@@ -31,9 +25,9 @@ export function MemoryNodeViewerProvider({
 }: {
   children: ReactNode
 }) {
-  const [nodeData, setNodeData] = useState<MemoryWithLevel | null>(null)
+  const [nodeData, setNodeData] = useState<Memory | null>(null)
   const [onDelete, setOnDelete] = useState<
-    ((node: MemoryWithLevel) => void) | undefined
+    ((node: Memory) => void) | undefined
   >(undefined)
 
   return (
@@ -67,10 +61,7 @@ export function useMemoryNodeViewer() {
   const isModalOpenRef = useRef(false)
 
   const showMemoryNode = useCallback(
-    (
-      node: MemoryWithLevel,
-      deleteCallback?: (node: MemoryWithLevel) => void
-    ) => {
+    (node: Memory, deleteCallback?: (node: Memory) => void) => {
       // Only update if we're not already showing this node
       if (isModalOpenRef.current && context.nodeData?.id === node.id) {
         return // Don't reopen the same node

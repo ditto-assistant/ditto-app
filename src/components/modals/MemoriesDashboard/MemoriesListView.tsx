@@ -5,8 +5,6 @@ import { Memory } from "@/api/getMemories"
 
 interface MemoriesListViewProps {
   memories: (Pair & { level?: number })[] // Updated to include the level property
-  onCopy: (memory: Memory, type: "prompt" | "response") => void
-  onDelete: (memory: Memory) => void
   onShowMemories: (memory: Memory) => void
 }
 
@@ -25,8 +23,6 @@ function pairToMemory(pair: Pair): Memory {
 
 const MemoriesListView: React.FC<MemoriesListViewProps> = ({
   memories,
-  onCopy,
-  onDelete,
   onShowMemories,
 }) => {
   return (
@@ -98,8 +94,6 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
               isUser={true}
               menuProps={{
                 id: memory.id,
-                onCopy: () => onCopy(pairToMemory(memory), "prompt"),
-                onDelete: () => onDelete(pairToMemory(memory)),
                 onShowMemories: () => onShowMemories(pairToMemory(memory)),
               }}
             />
@@ -111,8 +105,6 @@ const MemoriesListView: React.FC<MemoriesListViewProps> = ({
               isUser={false}
               menuProps={{
                 id: memory.id,
-                onCopy: () => onCopy(pairToMemory(memory), "response"),
-                onDelete: () => onDelete(pairToMemory(memory)),
                 onShowMemories: () => onShowMemories(pairToMemory(memory)),
               }}
             />

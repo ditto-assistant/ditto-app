@@ -8,11 +8,22 @@ import {
   Play,
   Pause,
   Volume2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
+import { Document, Page, pdfjs } from "react-pdf"
 import Modal from "@/components/modals/Modal"
 import { HapticPattern, triggerHaptic } from "@/lib/haptics"
 import { Button } from "@/components/ui/button"
 import "./ImageViewer.css"
+import "react-pdf/dist/Page/AnnotationLayer.css"
+import "react-pdf/dist/Page/TextLayer.css"
+
+// Configure PDF.js worker - use local worker for PWA compatibility
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.js",
+  import.meta.url
+).toString()
 
 type MediaType = "image" | "pdf" | "audio" | "video"
 
@@ -62,6 +73,8 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [numPages, setNumPages] = useState<number>(0)
+  const [pageNumber, setPageNumber] = useState(1)
 
   const imageRef = useRef<HTMLImageElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -74,6 +87,8 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
     setIsPlaying(false)
     setCurrentTime(0)
     setDuration(0)
+    setPageNumber(1)
+    setNumPages(0)
   }, [url])
 
   // Audio event handlers
@@ -145,6 +160,22 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, "0")}`
   }
+
+  // PDF event handlers
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages)
+    setPageNumber(1)
+  }
+
+  const changePage = (offset: number) => {
+    setPageNumber((prevPageNumber) => {
+      const newPage = prevPageNumber + offset
+      return Math.min(Math.max(newPage, 1), numPages)
+    })
+  }
+
+  const previousPage = () => changePage(-1)
+  const nextPage = () => changePage(1)
 
   // Download button for the header
   const HeaderDownloadButton = (
@@ -287,47 +318,77 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
     switch (type) {
       case "pdf":
         return (
-          <div
-            className="pdf-container"
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <object
-              style={{
-                flex: 1,
-                border: "none",
-              }}
-              data={url}
-              type="application/pdf"
+          <div className="pdf-container">
+            <Document
+              file={url}
+              onLoadSuccess={onDocumentLoadSuccess}
               className="media-viewer-content pdf-viewer"
-              title={`PDF: ${filename}`}
-            >
-              <iframe
-                src={url}
-                className="media-viewer-content pdf-viewer"
-                title={`PDF: ${filename}`}
-                style={{
-                  flex: 1,
-                  border: "none",
-                }}
-              >
-                <div style={{ padding: "20px", textAlign: "center" }}>
-                  <p>Unable to display PDF inline.</p>
+              loading={
+                <div className="pdf-loading">
+                  <div className="loading-spinner"></div>
+                  <p>Loading PDF...</p>
+                </div>
+              }
+              error={
+                <div className="pdf-error">
+                  <p>Failed to load PDF</p>
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: "#007bff", textDecoration: "underline" }}
+                    className="pdf-download-link"
                   >
-                    Click here to download and view the PDF
+                    Download PDF
                   </a>
                 </div>
-              </iframe>
-            </object>
+              }
+            >
+              <Page
+                pageNumber={pageNumber}
+                width={
+                  containerRef.current?.clientWidth
+                    ? Math.min(containerRef.current.clientWidth - 40, 800)
+                    : 800
+                }
+                className="pdf-page"
+                loading={
+                  <div className="page-loading">
+                    <div className="loading-spinner"></div>
+                  </div>
+                }
+              />
+            </Document>
+            {numPages > 1 && (
+              <div className="pdf-controls">
+                <button
+                  className="media-control-button pdf-nav"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    triggerHaptic(HapticPattern.Light)
+                    previousPage()
+                  }}
+                  disabled={pageNumber <= 1}
+                  title="Previous Page"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span className="pdf-page-info">
+                  Page {pageNumber} of {numPages}
+                </span>
+                <button
+                  className="media-control-button pdf-nav"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    triggerHaptic(HapticPattern.Light)
+                    nextPage()
+                  }}
+                  disabled={pageNumber >= numPages}
+                  title="Next Page"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
           </div>
         )
 
@@ -437,6 +498,7 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
 
   const canZoom = type === "image"
   const showZoomControls = canZoom && controlsVisible
+  const isPdf = type === "pdf"
 
   return (
     <Modal
@@ -455,7 +517,7 @@ function MediaViewer({ url, type, filename }: MediaViewerProps) {
         onTouchStart={canZoom ? handleTouchStart : undefined}
         onTouchMove={canZoom ? handleTouchMove : undefined}
         onTouchEnd={canZoom ? handleDragEnd : undefined}
-        onClick={toggleControls}
+        onClick={isPdf ? undefined : toggleControls}
         onDoubleClick={canZoom ? handleDoubleClick : undefined}
         style={{
           cursor: canZoom

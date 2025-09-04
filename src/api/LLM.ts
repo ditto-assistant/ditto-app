@@ -28,7 +28,7 @@ export interface ToolCallInfo {
 }
 
 // Cancel an active prompt streaming request
-export async function cancelPromptLLMV2(): Promise<boolean> {
+export async function cancelPrompt(): Promise<boolean> {
   try {
     const tok = await getToken()
     if (tok.err) throw tok.err
@@ -61,7 +61,7 @@ export async function cancelPromptLLMV2(): Promise<boolean> {
 }
 
 // New simplified V2 caller that builds and sends `input` array (types.Content shape)
-export async function promptV2BackendBuild(opts: {
+export async function prompt(opts: {
   input: PromptV2Content[]
   textCallback?: TextCallback | null
   onPairID?: (pairID: string) => void
@@ -105,6 +105,9 @@ export async function promptV2BackendBuild(opts: {
       onmessage: (message) => {
         try {
           const eventData = JSON.parse(message.data)
+          if (import.meta.env.DEV && message.event !== "chat.content") {
+            console.log("🚀 [LLM] Event:", message.event)
+          }
 
           // Handle all SSE events based on the event type
           switch (message.event) {

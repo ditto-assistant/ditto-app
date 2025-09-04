@@ -13,19 +13,16 @@ import MessageActions from "./MessageActions"
 import SyncIndicator from "./SyncIndicator"
 import MarkdownRenderer from "../MarkdownRenderer"
 import { ContentV2 } from "@/api/getMemories"
+import { HapticPattern, triggerHaptic } from "@/lib/haptics"
+import { toast } from "sonner"
+import { useMemoryDeletion } from "@/hooks/useMemoryDeletion"
+import { useConversationHistory } from "@/hooks/useConversationHistory"
 
 interface ChatMessageProps {
   content?: string
   timestamp: number | Date
   isUser: boolean
-  isLast?: boolean
   isOptimistic?: boolean
-  menuProps: {
-    onCopy: () => void
-    onDelete: () => void
-    onShowMemories: () => void
-    id: string
-  }
   // Sync indicator props
   showSyncIndicator?: boolean
   syncStage?: number
@@ -35,11 +32,13 @@ interface ChatMessageProps {
     memories?: boolean
     subjects?: boolean
   }
+  menuProps: {
+    id: string
+    onShowMemories: () => void
+  }
   // Progressive image rendering
   imagePartial?: string
   imageURL?: string
-  // Tool call streaming support
-  toolCalls?: import("@/api/LLM").ToolCallInfo[]
   // v2 content arrays (already presigned by backend)
   inputParts?: ContentV2[]
   outputParts?: ContentV2[]
@@ -49,7 +48,6 @@ export default function ChatMessage({
   content,
   timestamp,
   isUser,
-  isLast = false,
   isOptimistic = false,
   menuProps,
   showSyncIndicator = false,
@@ -57,29 +55,32 @@ export default function ChatMessage({
   hideActions = {},
   imagePartial,
   imageURL,
-  toolCalls,
   inputParts,
   outputParts,
 }: ChatMessageProps) {
   const userAvatar = useUserAvatar()
   const avatar = isUser ? (userAvatar ?? DEFAULT_USER_AVATAR) : DITTO_AVATAR
   const { fontSize } = useFontSize()
+  const { confirmMemoryDeletion } = useMemoryDeletion()
+  const { refetch } = useConversationHistory()
 
   const toolType = isUser ? null : detectToolType(content)
-
-  // Animation classes for entry animation
-  const animationClass = isLast
-    ? "animate-in fade-in-0 slide-in-from-bottom-3 duration-300"
-    : ""
+  const onDelete = () => {
+    triggerHaptic(HapticPattern.Light)
+    if (isOptimistic) return
+    confirmMemoryDeletion(menuProps.id, {
+      onSuccess: () => {
+        refetch()
+      },
+    })
+  }
 
   return (
     // Outer wrapper: stack messages vertically, align left/right
     <div
       className={cn(
         "flex flex-col w-full", // stack each message
-        isUser ? "items-end" : "items-start", // shift row right/left via flex-col cross-axis
-        isOptimistic && "opacity-80",
-        animationClass
+        isUser ? "items-end" : "items-start" // shift row right/left via flex-col cross-axis
       )}
     >
       {/* Chat bubble */}
@@ -135,32 +136,6 @@ export default function ChatMessage({
                     className="mb-2 rounded-md border border-border max-w-full"
                     draggable={false}
                   />
-                )}
-
-                {/* Tool calls from streaming */}
-                {toolCalls && toolCalls.length > 0 && (
-                  <div className="mb-2 space-y-2">
-                    {toolCalls.map((toolCall, index) => (
-                      <div
-                        key={`${toolCall.id}-${index}`}
-                        className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-border"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            Tool Call:
-                          </span>
-                          <span className="text-sm font-mono bg-background px-2 py-0.5 rounded border">
-                            {toolCall.name}
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground w-full">
-                          <pre className="whitespace-pre-wrap break-words">
-                            {JSON.stringify(toolCall.args, null, 2)}
-                          </pre>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 )}
 
                 <MarkdownRenderer>{content}</MarkdownRenderer>
@@ -222,8 +197,44 @@ export default function ChatMessage({
               pairID={menuProps.id}
               showSyncIndicator={showSyncIndicator}
               hideActions={hideActions}
-              onCopy={menuProps.onCopy}
-              onDelete={menuProps.onDelete}
+              onCopy={() => {
+                triggerHaptic(HapticPattern.Light)
+                function copyWithToast(content: string) {
+                  navigator.clipboard
+                    .writeText(content)
+                    .then(() => {
+                      toast.success("Copied to clipboard")
+                    })
+                    .catch((e) => {
+                      console.error("Failed to copy to clipboard", e)
+                      toast.error("Failed to copy to clipboard")
+                    })
+                }
+                if (inputParts) {
+                  for (let i = 0; i < inputParts.length; i++) {
+                    if (inputParts[i].type !== "text") {
+                      continue
+                    }
+                    copyWithToast(inputParts[i].content)
+                  }
+                  return
+                }
+                if (outputParts) {
+                  for (let i = 0; i < outputParts.length; i++) {
+                    if (outputParts[i].type !== "text") {
+                      continue
+                    }
+                    copyWithToast(outputParts[i].content)
+                  }
+                  return
+                }
+                if (content) {
+                  // legacy support, todo remove this once we've migrated all messages
+                  copyWithToast(content)
+                  return
+                }
+              }}
+              onDelete={onDelete}
               onShowMemories={menuProps.onShowMemories}
             />
           </div>

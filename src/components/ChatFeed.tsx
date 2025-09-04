@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import "./ChatFeed.css"
 import { ChevronDown } from "lucide-react"
-import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
 import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
 import {
@@ -23,7 +22,6 @@ import type {
   ForceScrollFunction,
   ScrollDetectionFunction,
 } from "./ChatFeed/types"
-import { ContentV2 } from "@/api/getMemories"
 
 // Custom hook for timeout cleanup management
 function useTimeoutCleanup() {
@@ -757,11 +755,9 @@ const ChatFeed: React.FC = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch,
   } = useConversationHistory()
   const { showMemoryNetwork } = useMemoryNetwork()
-  const { confirmMemoryDeletion } = useMemoryDeletion()
-  const { isMobile } = usePlatform()
+  const { isMobile, isIOS } = usePlatform()
   const { syncsInProgress, checkStatuses, isStreaming } = useMemorySyncContext()
 
   const [messagesVisible, setMessagesVisible] = useState(false)
@@ -884,23 +880,12 @@ const ChatFeed: React.FC = () => {
     previousSyncCountRef.current = currentSyncCount
   }, [syncsInProgress, hasOptimisticMessages, addTimeout])
 
-  // Compute non-optimistic message IDs outside the effect
-  const nonOptimisticMessageIDs = useMemo(() => {
-    return messages
-      .filter(
-        (msg) =>
-          !msg.isOptimistic &&
-          (msg.output?.some((p) => p.type === "text") || msg.response)
-      )
-      .map((msg) => msg.id)
-  }, [messages])
-
   useEffect(() => {
     // Don't check sync status while streaming - it causes excessive requests
-    if (!isLoading && !isStreaming && nonOptimisticMessageIDs.length > 0) {
-      checkStatuses(nonOptimisticMessageIDs)
+    if (!isLoading && !isStreaming && messages.length > 0) {
+      checkStatuses(messages.map((msg) => msg.id))
     }
-  }, [isLoading, isStreaming, nonOptimisticMessageIDs, checkStatuses])
+  }, [isLoading, isStreaming, messages, checkStatuses])
 
   useEffect(() => {
     let isMounted = true
@@ -908,8 +893,7 @@ const ChatFeed: React.FC = () => {
     if (!isLoading && messages.length > 0) {
       requestAnimationFrame(() => {
         if (!isMounted) return
-
-        if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        if (isMobile && isIOS) {
           const timeout = setTimeout(() => {
             if (isMounted) {
               setMessagesVisible(true)
@@ -927,7 +911,7 @@ const ChatFeed: React.FC = () => {
     return () => {
       isMounted = false
     }
-  }, [isLoading, messages, isMobile, addTimeout])
+  }, [isLoading, messages, isMobile, isIOS, addTimeout])
 
   const handleScrollToTop = useCallback(() => {
     if (
@@ -986,62 +970,6 @@ const ChatFeed: React.FC = () => {
     }
   }, [shouldFetchNext, fetchNextPage, addTimeout])
 
-  const handleCopy = useCallback(
-    (message: OptimisticMemory, type: "prompt" | "response" = "prompt") => {
-      // Extract text content from input/output arrays
-      const extractTextContent = (parts: ContentV2[] | undefined): string => {
-        if (!parts || parts.length === 0) return ""
-        return parts
-          .filter((part) => part.type === "text")
-          .map((part) => part.content)
-          .join("\n")
-          .trim()
-      }
-
-      const textToCopy =
-        type === "prompt"
-          ? extractTextContent(message.input)
-          : extractTextContent(message.output)
-
-      if (!textToCopy) {
-        toast.error("No content to copy")
-        return
-      }
-
-      navigator.clipboard.writeText(textToCopy).then(
-        () => {
-          toast.success("Copied to clipboard")
-        },
-        (err) => {
-          console.error("Could not copy text: ", err)
-          toast.error("Failed to copy text")
-        }
-      )
-    },
-    []
-  )
-
-  const handleMessageDelete = useCallback(
-    async (message: OptimisticMemory) => {
-      if (!message.id) {
-        console.error("Cannot delete message: missing ID")
-        toast.error("Failed to delete message")
-        return
-      }
-      try {
-        confirmMemoryDeletion(message.id, {
-          onSuccess: () => {
-            refetch()
-          },
-        })
-      } catch (error) {
-        console.error("Error deleting message:", error)
-        toast.error("Failed to delete message")
-      }
-    },
-    [confirmMemoryDeletion, refetch]
-  )
-
   const handleShowMemories = useCallback(
     async (message: OptimisticMemory) => {
       try {
@@ -1096,7 +1024,48 @@ const ChatFeed: React.FC = () => {
             transition: UI_CONSTANTS.OPACITY_TRANSITION,
           }}
         >
-          {/* Render optimistic message first (if exists) */}
+          {/* Render server messages */}
+          {messages
+            .map((message, index) => {
+              const syncState = syncsInProgress.get(message.id)
+              const showSync = !!syncState
+              const syncStage = syncState?.stage || 1
+
+              return (
+                <div key={message.id || index} className="message-pair">
+                  {message.input && message.input.length > 0 && (
+                    <ChatMessage
+                      inputParts={message.input}
+                      timestamp={message.timestamp}
+                      isUser={true}
+                      menuProps={{
+                        id: message.id,
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                      showSyncIndicator={false}
+                      syncStage={1}
+                    />
+                  )}
+
+                  {/* Assistant message (output) - always render if there's output content */}
+                  {message.output && message.output.length > 0 && (
+                    <ChatMessage
+                      outputParts={message.output}
+                      timestamp={message.timestamp}
+                      isUser={false}
+                      menuProps={{
+                        id: message.id,
+                        onShowMemories: () => handleShowMemories(message),
+                      }}
+                      showSyncIndicator={showSync}
+                      syncStage={syncStage}
+                    />
+                  )}
+                </div>
+              )
+            })
+            .reverse()}
+
           {optimisticMessage && (
             <div key={optimisticMessage.id} className="message-pair">
               {optimisticMessage.input &&
@@ -1105,12 +1074,9 @@ const ChatFeed: React.FC = () => {
                     inputParts={optimisticMessage.input}
                     timestamp={optimisticMessage.timestamp}
                     isUser={true}
-                    isLast={false}
                     isOptimistic={true}
                     menuProps={{
                       id: optimisticMessage.id,
-                      onCopy: () => handleCopy(optimisticMessage, "prompt"),
-                      onDelete: () => handleMessageDelete(optimisticMessage),
                       onShowMemories: () =>
                         handleShowMemories(optimisticMessage),
                     }}
@@ -1126,14 +1092,11 @@ const ChatFeed: React.FC = () => {
                     outputParts={optimisticMessage.output}
                     timestamp={optimisticMessage.timestamp}
                     isUser={false}
-                    isLast={false}
                     isOptimistic={true}
                     imagePartial={optimisticMessage.generatedImagePartial}
                     imageURL={optimisticMessage.generatedImageURL}
                     menuProps={{
                       id: optimisticMessage.id,
-                      onCopy: () => handleCopy(optimisticMessage, "response"),
-                      onDelete: () => handleMessageDelete(optimisticMessage),
                       onShowMemories: () =>
                         handleShowMemories(optimisticMessage),
                     }}
@@ -1143,61 +1106,6 @@ const ChatFeed: React.FC = () => {
                 )}
             </div>
           )}
-
-          {/* Render server messages */}
-          {messages
-            .map((message, index) => {
-              const isLast = index === messages.length - 1 && !optimisticMessage
-
-              const syncState = syncsInProgress.get(message.id)
-              const showSync = !!syncState
-              const syncStage = syncState?.stage || 1
-
-              return (
-                <div key={message.id || index} className="message-pair">
-                  {message.input && message.input.length > 0 && (
-                    <ChatMessage
-                      inputParts={message.input}
-                      timestamp={message.timestamp}
-                      isUser={true}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
-                      menuProps={{
-                        id: message.id,
-                        onCopy: () => handleCopy(message, "prompt"),
-                        onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message),
-                      }}
-                      showSyncIndicator={false}
-                      syncStage={1}
-                    />
-                  )}
-
-                  {/* Assistant message (output) - always render if there's output content */}
-                  {message.output && message.output.length > 0 && (
-                    <ChatMessage
-                      outputParts={message.output}
-                      timestamp={message.timestamp}
-                      isUser={false}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
-                      imagePartial={message.generatedImagePartial}
-                      imageURL={message.generatedImageURL}
-                      toolCalls={message.toolCalls}
-                      menuProps={{
-                        id: message.id,
-                        onCopy: () => handleCopy(message, "response"),
-                        onDelete: () => handleMessageDelete(message),
-                        onShowMemories: () => handleShowMemories(message),
-                      }}
-                      showSyncIndicator={showSync}
-                      syncStage={syncStage}
-                    />
-                  )}
-                </div>
-              )
-            })
-            .reverse()}
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">

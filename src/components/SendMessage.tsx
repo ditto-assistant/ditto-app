@@ -15,11 +15,7 @@ import {
   FileText,
   AudioLines,
 } from "lucide-react"
-import {
-  promptV2BackendBuild,
-  cancelPromptLLMV2,
-  type PromptV2Content,
-} from "@/api/LLM"
+import { prompt, cancelPrompt, type PromptV2Content } from "@/api/LLM"
 import { uploadImage, uploadFile } from "@/api/userContent"
 import { PersonalityStorage } from "@/lib/personalityStorage"
 import { cn, validateFileSizeCallback } from "@/lib/utils"
@@ -89,10 +85,9 @@ export default function SendMessage({
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
-    setOptimisticPairID,
     setImagePartial,
     setImageCompleted,
-    setToolCalls,
+    addToolCalls,
   } = useConversationHistory()
   const {
     message,
@@ -141,7 +136,7 @@ export default function SendMessage({
   const handleStopGeneration = useCallback(() => {
     if (isWaitingForResponse) {
       console.log("🛑 [SendMessage] Stopping response generation")
-      cancelPromptLLMV2()
+      cancelPrompt()
       toast.info("Response generation stopped")
       setIsWaitingForResponse(false)
       onStop()
@@ -302,11 +297,7 @@ export default function SendMessage({
         if (process.env.NODE_ENV === "development") {
           console.log("🚀 [SendMessage] Creating optimistic message")
         }
-        const optimisticMessageId = addOptimisticMessage(optimisticInput)
-
-        const streamingCallback = (chunk: string) => {
-          updateOptimisticResponse(optimisticMessageId, chunk)
-        }
+        addOptimisticMessage(optimisticInput)
 
         // Build input array per backend types.Content
         const input: PromptV2Content[] = []
@@ -337,34 +328,21 @@ export default function SendMessage({
           }))
         )
 
-        let pairID = optimisticMessageId
-        const final = await promptV2BackendBuild({
+        await prompt({
           input,
-          textCallback: streamingCallback,
+          textCallback: updateOptimisticResponse,
           onPairID: (id) => {
-            pairID = id
-            setOptimisticPairID(optimisticMessageId, id)
+            console.log("🚀 [SendMessage] Pair ID received:", id)
+            finalizeOptimisticMessage(id)
+            triggerSync(id)
           },
-          onImagePartial: (index, b64) =>
-            setImagePartial(optimisticMessageId, index, b64),
-          onImageCompleted: (url) =>
-            setImageCompleted(optimisticMessageId, url),
-          onToolCalls: (toolCalls) =>
-            setToolCalls(optimisticMessageId, toolCalls),
+          onImagePartial: setImagePartial,
+          onImageCompleted: setImageCompleted,
+          onToolCalls: addToolCalls,
           personalitySummary: PersonalityStorage.getPersonalitySummary(userID),
           memoryStats: stringifyTopSubjects(memoryStats.topSubjects),
         })
 
-        // Finalize optimistic message with final text
-        finalizeOptimisticMessage(optimisticMessageId, final)
-
-        if (!pairID) {
-          console.error("No pairID received from backend")
-          return
-        }
-        try {
-          triggerSync(pairID)
-        } catch {}
         if (process.env.NODE_ENV === "development") {
           console.log("✅ [SendMessage] Prompt completed successfully")
         }
@@ -404,10 +382,9 @@ export default function SendMessage({
       memoryStats.topSubjects,
       finalizeOptimisticMessage,
       updateOptimisticResponse,
-      setOptimisticPairID,
       setImagePartial,
       setImageCompleted,
-      setToolCalls,
+      addToolCalls,
       triggerSync,
       onStop,
     ]
