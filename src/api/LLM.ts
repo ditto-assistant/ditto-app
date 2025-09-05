@@ -96,6 +96,7 @@ export async function prompt(opts: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${tok.ok.token}`,
       },
+      openWhenHidden: true,
       body: JSON.stringify(body),
       onopen: async (response) => {
         if (response.status === 402) throw ErrorPaymentRequired
