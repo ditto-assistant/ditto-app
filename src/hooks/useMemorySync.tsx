@@ -6,7 +6,7 @@ interface SyncState {
   stage: number
 }
 
-export const useMemorySync = () => {
+export const useMemorySync = (isStreaming: boolean = false) => {
   const [syncsInProgress, setSyncsInProgress] = useState<
     Map<string, SyncState>
   >(new Map())
@@ -62,6 +62,12 @@ export const useMemorySync = () => {
 
     const pollStatuses = async () => {
       if (isCancelled) return
+
+      // Don't poll sync status while streaming content
+      if (isStreaming) {
+        timeoutId = setTimeout(pollStatuses, 1000)
+        return
+      }
 
       // Use ref to get current syncs without causing re-renders
       const currentSyncs = syncsRef.current
@@ -119,7 +125,7 @@ export const useMemorySync = () => {
         clearTimeout(timeoutId)
       }
     }
-  }, []) // Remove syncsInProgress dependency
+  }, [isStreaming]) // Include isStreaming to restart polling when streaming state changes
 
   return {
     syncsInProgress,

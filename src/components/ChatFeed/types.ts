@@ -40,14 +40,10 @@ export interface CustomScrollToBottomProps {
   // Optional: expose internal scroll container ref to parent for distance computations
   scrollContainerRefExternal?: MutableRefObject<HTMLDivElement | null>
   // Messages array to detect optimistic state
-  messages?: any[]
+  hasOptimisticMessages?: boolean
   // Callback to expose manual scroll state to parent
   onManualScrollStateChange?: (isManualScrolling: boolean) => void
 }
-
-// Main ChatFeed component props (forwardRef pattern)
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ChatFeedProps {}
 
 // Message menu actions interface
 export interface MessageMenuProps {

@@ -74,11 +74,9 @@ export const useMemoryDeletion = (updateConversation) => {
   const confirmMemoryDeletion = useCallback(
     (docId, options = {}) => {
       if (!user.uid) return
-      const isMessage = !!options.isMessage
-      const title = isMessage ? "Delete Message?" : "Delete Memory?"
-      const content = isMessage
-        ? "Are you sure you want to delete this message? This will permanently remove it from your chat history and knowledge graph. This action cannot be undone."
-        : "Are you sure you want to delete this memory? This will permanently remove it from your memory collection and clean up any orphaned subjects in your knowledge graph. This action cannot be undone."
+      const title = "Delete Memory?"
+      const content =
+        "Are you sure you want to delete this memory? This will permanently remove it from your memory collection and clean up any orphaned subjects in your knowledge graph. This action cannot be undone."
 
       showConfirmationDialog({
         title,

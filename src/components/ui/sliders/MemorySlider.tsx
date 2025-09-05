@@ -59,7 +59,7 @@ export const MemorySlider: React.FC<MemorySliderProps> = ({
   const [localValues, setLocalValues] = useState<number[]>(values)
 
   // Debounced callback to avoid spamming the API. Only called on *commit*.
-  const [debouncedOnChange, isSaving] = useDebounce(onChange, debounceMs)
+  const [debouncedOnChange] = useDebounce(onChange, debounceMs)
 
   // Keep local state in sync if parent props change (e.g. external reset)
   useEffect(() => {

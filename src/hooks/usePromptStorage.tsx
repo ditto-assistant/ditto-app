@@ -1,10 +1,4 @@
-import {
-  useContext,
-  createContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react"
+import { useContext, createContext, useState, useCallback } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/useAuth"
 import {
@@ -12,18 +6,17 @@ import {
   getPromptDraft,
   clearPromptDraft,
 } from "@/api/userDrafts"
-import { debounce, DebouncedFunction } from "@/utils/debounce"
+import { debounce } from "perfect-debounce"
 
 interface PromptData {
   prompt: string
-  image: string
 }
 
 interface PromptStorageContextType {
   promptData: PromptData | null
   isLoading: boolean
   error: Error | null
-  savePrompt: (prompt: string, image?: string) => void
+  savePrompt: (prompt: string) => void
   clearPrompt: () => void
 }
 
@@ -57,23 +50,14 @@ export function PromptStorageProvider({
 function usePromptStorageData(): PromptStorageContextType {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const [debounceSave] = useState<
-    DebouncedFunction<(userId: string, prompt: string, image?: string) => void>
-  >(() =>
-    debounce(async (userId: string, prompt: string, image: string = "") => {
-      const result = await savePromptDraft(userId, prompt, image)
+  const [debounceSave] = useState(() =>
+    debounce(async (userId: string, prompt: string) => {
+      const result = await savePromptDraft(userId, prompt, "")
       if (result instanceof Error) {
         console.error("Error saving draft:", result)
       }
     }, 500)
   )
-
-  // Cancel debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debounceSave.cancel()
-    }
-  }, [debounceSave])
 
   // Query to fetch saved prompt
   const query = useQuery({
@@ -83,7 +67,7 @@ function usePromptStorageData(): PromptStorageContextType {
       const result = await getPromptDraft(user.uid)
       if (result instanceof Error) {
         if (result.message === "No draft found") {
-          return { prompt: "", image: "" }
+          return { prompt: "" }
         }
         throw result
       }
@@ -96,23 +80,17 @@ function usePromptStorageData(): PromptStorageContextType {
 
   // Mutation to save prompt
   const saveMutation = useMutation({
-    mutationFn: async ({
-      prompt,
-      image = "",
-    }: {
-      prompt: string
-      image?: string
-    }) => {
+    mutationFn: async ({ prompt }: { prompt: string }) => {
       if (!user?.uid) throw new Error("No user")
-      if (!prompt.trim() && !image) {
+      if (!prompt.trim()) {
         const result = await clearPromptDraft(user.uid)
         if (result instanceof Error) {
           throw result
         }
-        return { prompt: "", image: "" }
+        return { prompt: "" }
       }
-      debounceSave(user.uid, prompt, image)
-      return { prompt, image }
+      debounceSave(user.uid, prompt)
+      return { prompt }
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["promptStorage", user?.uid], data)
@@ -127,7 +105,7 @@ function usePromptStorageData(): PromptStorageContextType {
       if (result instanceof Error) {
         throw result
       }
-      return { prompt: "", image: "" }
+      return { prompt: "" }
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["promptStorage", user?.uid], data)
@@ -138,8 +116,8 @@ function usePromptStorageData(): PromptStorageContextType {
 
   // Wrapper functions for mutations
   const savePrompt = useCallback(
-    (prompt: string, image: string = "") => {
-      savePromptMutate({ prompt, image })
+    (prompt: string) => {
+      savePromptMutate({ prompt })
     },
     [savePromptMutate]
   )

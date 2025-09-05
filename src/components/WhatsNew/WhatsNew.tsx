@@ -1,4 +1,4 @@
-import Modal from "@/components/ui/modals/Modal"
+import Modal from "@/components/modals/Modal"
 import { version as appVersion } from "../../../package.json"
 import "./WhatsNew.css"
 // Import all version components

@@ -6,6 +6,7 @@ import {
   Model,
 } from "@/types/llm"
 
+export const MOBILE_CLICK_DEBOUNCE_MS = 50
 export const IMAGE_PLACEHOLDER_IMAGE = "/placeholders/image-loading-192.png"
 export const DITTO_LOGO = "/icons/round/android-chrome-192x192.png"
 export const BRAND_TEXT = "Hey Ditto"
@@ -377,7 +378,7 @@ export const MEMORY_CONFIG = {
   },
   longTerm: {
     min: 0,
-    max: 5,
+    max: 8,
     step: 1,
     maxChainLength: 2,
   },
