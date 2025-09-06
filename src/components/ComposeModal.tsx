@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useCallback } from "react"
+import React, { useRef, useEffect, useLayoutEffect, useCallback } from "react"
+import { flushSync } from "react-dom"
 import { PlaneTakeoff } from "lucide-react"
 import { usePlatform } from "@/hooks/usePlatform"
 import { Button } from "@/components/ui/button"
@@ -61,13 +62,36 @@ const ComposeModal: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [message, handleSubmit, isMobile, closeComposeModal])
 
-  // Focus the textarea when the modal opens
-  useEffect(() => {
+  // Focus the textarea when the modal opens and position cursor at end using "paste" approach
+  useLayoutEffect(() => {
     if (isOpen && textAreaRef.current) {
-      // Small delay to ensure modal is fully rendered
-      setTimeout(() => {
-        textAreaRef.current?.focus()
-      }, 50)
+      // Use flushSync to ensure DOM updates are completed before focusing
+      flushSync(() => {
+        // Force a layout calculation to ensure the modal is fully rendered
+        textAreaRef.current?.getBoundingClientRect()
+      })
+
+      // Use requestAnimationFrame to ensure the DOM is ready
+      requestAnimationFrame(() => {
+        if (textAreaRef.current) {
+          // Store the current message
+          const currentMessage = textAreaRef.current.value
+          
+          // Clear the textarea and focus it (cursor will be at position 0)
+          textAreaRef.current.value = ""
+          textAreaRef.current.focus()
+          
+          // Insert the text using execCommand if available, otherwise use insertText
+          if (currentMessage) {
+            if (document.execCommand) {
+              document.execCommand('insertText', false, currentMessage)
+            } else {
+              // Fallback for browsers that don't support execCommand
+              textAreaRef.current.setRangeText(currentMessage, 0, 0, 'end')
+            }
+          }
+        }
+      })
     }
   }, [isOpen])
 
