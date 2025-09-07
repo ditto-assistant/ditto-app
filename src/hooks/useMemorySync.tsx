@@ -65,6 +65,7 @@ export const useMemorySync = (isStreaming: boolean = false) => {
 
       // Don't poll sync status while streaming content
       if (isStreaming) {
+        // Schedule a quick check when streaming might stop
         timeoutId = setTimeout(pollStatuses, 1000)
         return
       }
@@ -113,7 +114,7 @@ export const useMemorySync = (isStreaming: boolean = false) => {
       }
 
       // Schedule the next poll with more frequent checking when syncs are active
-      timeoutId = setTimeout(pollStatuses, 2000)
+      timeoutId = setTimeout(pollStatuses, 5000)
     }
 
     // Start the polling loop
