@@ -3,7 +3,7 @@ import { LLMModel, ImageModel } from "@/api/services"
 import { useModelPreferences } from "@/hooks/useModelPreferences"
 import { Model, Vendor } from "@/types/llm"
 import { IMAGE_GENERATION_SIZES } from "@/constants"
-import { triggerHaptic, HapticPattern } from "@/utils/haptics"
+import { triggerHaptic, HapticPattern } from "@/lib/haptics"
 import {
   Card,
   CardContent,

@@ -15,6 +15,7 @@ function getBaseURL(dittoEnv: string) {
 }
 
 const getPGVectorAPIURL = (dittoEnv: string) => {
+  return "https://agentic-pipelines-22790208601.us-central1.run.app"
   switch (dittoEnv) {
     case "development":
       return "http://localhost:8080"
@@ -59,6 +60,8 @@ export const routes = {
   // v2 API
   memories: BASE_URL + "/api/v2/get-memories",
   promptV2: BASE_URL + "/api/v2/prompt",
+  promptStop: (userID: string) =>
+    BASE_URL + `/api/v2/users/${userID}/prompt/stop`,
   pgVectorAPIURL: PG_VECTOR_API_URL,
   // Knowledge Graph Endpoints
   kgSubjectsSearch: PG_VECTOR_API_URL + "/kg/subjects/search",

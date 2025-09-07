@@ -13,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { triggerHaptic, HapticPattern } from "@/utils/haptics"
+import { triggerHaptic, HapticPattern } from "@/lib/haptics"
 
 interface FilterValues {
   speed: string | null

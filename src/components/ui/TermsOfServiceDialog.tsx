@@ -3,7 +3,6 @@ import { deleteUserAccount } from "@/api/userContent"
 import { useAuth } from "@/hooks/useAuth"
 import { useTermsOfService } from "@/hooks/useTermsOfService"
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog"
-import MarkdownRenderer from "@/components/MarkdownRenderer"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import MarkdownRenderer from "../MarkdownRenderer"
 
 export interface TermsOfServiceProps {
   open: boolean
@@ -152,7 +152,6 @@ export default function TermsOfServiceDialog({
           >
             <div className="p-4">
               <MarkdownRenderer
-                content={content}
                 className={cn(
                   "prose prose-invert max-w-none",
                   "prose-headings:text-primary prose-headings:font-semibold",
@@ -162,7 +161,9 @@ export default function TermsOfServiceDialog({
                   "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
                   "prose-li:text-foreground/90 prose-ul:my-3 prose-ol:my-3"
                 )}
-              />
+              >
+                {content}
+              </MarkdownRenderer>
             </div>
           </div>
         )}

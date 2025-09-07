@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { DEFAULT_USER_AVATAR } from "@/constants"
+import { useAuth } from "./useAuth"
 
 // Check if the Workbox service worker API is available
 const hasServiceWorker = "serviceWorker" in navigator && "caches" in window
@@ -45,9 +46,10 @@ export const preloadAvatar = (photoURL: string | null | undefined) => {
 }
 
 export function useUserAvatar(
-  photoURL: string | null | undefined,
   fallbackAvatar = DEFAULT_USER_AVATAR
 ): string | null {
+  const { user } = useAuth()
+  const photoURL = user?.photoURL
   // Use React Query to efficiently fetch and cache the image
   const { data: avatarUrl, isError } = useQuery({
     queryKey: ["avatar", photoURL],

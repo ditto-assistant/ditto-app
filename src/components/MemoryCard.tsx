@@ -2,7 +2,6 @@ import React, { useState } from "react"
 import { MessageCircle, ChevronDown, X } from "lucide-react"
 import { Memory } from "@/api/getMemories"
 import { ComprehensivePairDetails, PairSubject } from "@/api/kg"
-import MarkdownRenderer from "@/components/MarkdownRenderer"
 
 interface MemoryCardProps {
   memory: Memory
@@ -15,13 +14,6 @@ interface MemoryCardProps {
   onShowChatMessage: (memory: Memory) => void
   className?: string
   variant?: "modal" | "card"
-}
-
-// Image detection in memory content
-const hasImages = (content: string): boolean => {
-  return (
-    content.includes("![") && content.includes("](") && content.includes(")")
-  )
 }
 
 const MemoryCard: React.FC<MemoryCardProps> = ({

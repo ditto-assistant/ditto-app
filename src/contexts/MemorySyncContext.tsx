@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react"
 import { useMemorySync } from "@/hooks/useMemorySync"
+import { useComposeContext } from "@/contexts/ComposeContext"
 
 interface SyncState {
   stage: number
@@ -9,6 +10,7 @@ interface MemorySyncContextType {
   syncsInProgress: Map<string, SyncState>
   triggerSync: (messageId: string) => Promise<void>
   checkStatuses: (messageIDs: string[]) => Promise<void>
+  isStreaming: boolean
 }
 
 const MemorySyncContext = createContext<MemorySyncContextType | undefined>(
@@ -32,10 +34,12 @@ interface MemorySyncProviderProps {
 export const MemorySyncProvider: React.FC<MemorySyncProviderProps> = ({
   children,
 }) => {
-  const syncState = useMemorySync()
+  const { isWaitingForResponse } = useComposeContext()
+  const syncState = useMemorySync(isWaitingForResponse)
   const value = {
     ...syncState,
     isSyncing: syncState.syncsInProgress.size > 0,
+    isStreaming: isWaitingForResponse,
   }
 
   return (

@@ -2,16 +2,43 @@ import { Result } from "@/types/common"
 import { routes } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
 
+export type ContentTypeV2 =
+  | "text"
+  | "image"
+  | "application/pdf"
+  | "audio/wav"
+  | "audio/mp3"
+  | "tool_call"
+
+export interface ToolCallData {
+  id: string
+  name: string
+  args: Record<string, unknown>
+}
+
+export interface ContentV2 {
+  type: ContentTypeV2
+  content: string
+  // optional fields present in some tool/file responses
+  toolCall?: ToolCallData
+  annotations?: unknown
+  id?: string
+  originalFilename?: string
+}
+
 export interface Memory {
   id: string
   score: number
-  prompt: string
-  response: string
+  prompt?: string
+  response?: string
   timestamp: Date
   vector_distance: number
   depth: number
   similarity?: number // For KG pairs data
   children?: Memory[]
+  // v2 fields
+  input?: ContentV2[]
+  output?: ContentV2[]
   // Image support fields
   hasImages?: boolean
   imageUrls?: string[]

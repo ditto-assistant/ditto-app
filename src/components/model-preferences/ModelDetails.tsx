@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Vendor } from "@/types/llm"
-import { triggerHaptic, HapticPattern } from "@/utils/haptics"
+import { triggerHaptic, HapticPattern } from "@/lib/haptics"
 
 interface ModelDetailsProps {
   model: LLMModel | ImageModel | null

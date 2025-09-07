@@ -5,7 +5,7 @@ import { BASE_URL } from "@/firebaseConfig"
 // Response schemas
 export const UserDraftResponseSchema = z.object({
   prompt: z.string(),
-  image: z.string(),
+  image: z.string().optional(),
 })
 export type UserDraftResponse = z.infer<typeof UserDraftResponseSchema>
 

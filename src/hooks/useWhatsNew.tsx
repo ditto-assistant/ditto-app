@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { getUpdateState } from "@/utils/updateService"
+import { getUpdateState } from "@/lib/updateService"
 import { useModal } from "./useModal"
 import { auth } from "@/lib/firebase"
 import { doc, getDoc, setDoc, getFirestore } from "firebase/firestore"

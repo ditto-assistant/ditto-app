@@ -10,6 +10,7 @@
     "bun:test",
     "@tailwindcss/postcss",
     "caniuse-lite",
-    "vite-env"
+    "vite-env",
+    "babel-plugin-react-compiler"
   ]
 } 

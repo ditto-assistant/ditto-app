@@ -1,23 +1,16 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  forwardRef,
-  useCallback,
-  useMemo,
-} from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import "./ChatFeed.css"
 import { ChevronDown } from "lucide-react"
-import { useMemoryDeletion } from "../hooks/useMemoryDeletion"
 import { toast } from "sonner"
 import { useMemoryNetwork } from "@/hooks/useMemoryNetwork"
-import { useConversationHistory } from "@/hooks/useConversationHistory"
+import {
+  OptimisticMemory,
+  useConversationHistory,
+} from "@/hooks/useConversationHistory"
 import { usePlatform } from "@/hooks/usePlatform"
 import { useMemorySyncContext } from "@/contexts/MemorySyncContext"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
-import ChatMessage from "./ChatMessage"
-
-// Import constants and types
+import ChatMessage from "./chat-message/ChatMessage"
 import {
   SCROLL_CONSTANTS,
   UI_CONSTANTS,
@@ -25,7 +18,6 @@ import {
 } from "./ChatFeed/constants"
 import type {
   CustomScrollToBottomProps,
-  ChatFeedProps,
   ScrollBehavior,
   ForceScrollFunction,
   ScrollDetectionFunction,
@@ -96,7 +88,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   onScrollToTopRef,
   forceScrollToBottomRef,
   scrollContainerRefExternal,
-  messages = [],
+  hasOptimisticMessages,
   onManualScrollStateChange, // Add callback to expose manual scroll state
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -518,6 +510,8 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
         onScroll(e.nativeEvent)
       }
     },
+    // Refs and state setters are intentionally omitted to prevent infinite re-renders
+
     [
       isScrolledToBottom,
       detectScrollToTop,
@@ -531,16 +525,10 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
       setShowScrollToBottom,
       streamingTimeoutRef,
       userScrollingManualRef,
-      // Refs are intentionally omitted to prevent infinite re-renders
     ]
   )
 
   useEffect(() => {
-    // Check if there are any optimistic messages being generated
-    const hasOptimisticMessages = messages.some(
-      (msg) => msg.isOptimistic === true
-    )
-
     // Only enter streaming mode if there are optimistic messages
     if (!hasOptimisticMessages) {
       // Clear any existing streaming timeout and RAF when no generation is happening
@@ -680,7 +668,7 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    messages, // Now we depend on messages to detect optimistic state changes
+    hasOptimisticMessages, // Use memoized optimistic detection instead of raw messages
     isScrolledToBottom,
     initialScrollBehavior,
     onScrollComplete,
@@ -759,20 +747,18 @@ const CustomScrollToBottom: React.FC<CustomScrollToBottomProps> = ({
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
+const ChatFeed: React.FC = () => {
   const {
     messages,
+    optimisticMessage,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch,
   } = useConversationHistory()
   const { showMemoryNetwork } = useMemoryNetwork()
-  const { confirmMemoryDeletion } = useMemoryDeletion()
-  const { isMobile } = usePlatform()
-  const { syncsInProgress, checkStatuses } = useMemorySyncContext()
+  const { isMobile, isIOS } = usePlatform()
+  const { syncsInProgress, checkStatuses, isStreaming } = useMemorySyncContext()
 
   const [messagesVisible, setMessagesVisible] = useState(false)
   const [shouldFetchNext, setShouldFetchNext] = useState(false)
@@ -780,68 +766,54 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
   const fetchingRef = useRef(false)
   const detectScrollToTopRef = useRef<ScrollDetectionFunction | null>(null)
   const forceScrollToBottomRef = useRef<ForceScrollFunction | null>(null)
-  const previousMessageCountRef = useRef(0)
   const previousSyncCountRef = useRef(0)
   const messagesScrollViewRef = useRef<HTMLDivElement>(null)
   const manualScrollStateRef = useRef(false) // Track manual scroll state from child component
 
   const { addTimeout, clearAllTimeouts } = useTimeoutCleanup()
 
-  useEffect(() => {
-    if (messagesVisible && forceScrollToBottomRef.current) {
-      // Only force scroll if there are optimistic messages being generated
-      const hasOptimisticMessages = messages.some(
-        (msg) => msg.isOptimistic === true
-      )
-      if (hasOptimisticMessages) {
-        // Check if user has manually scrolled up before forcing scroll
-        const scrollContainer = messagesScrollViewRef.current
-        if (scrollContainer) {
-          const currentDistanceFromBottom =
-            scrollContainer.scrollHeight -
-            scrollContainer.scrollTop -
-            scrollContainer.clientHeight
+  // Check if there's an optimistic message
+  const hasOptimisticMessages = !!optimisticMessage
 
-          // Only auto-scroll if user is near bottom or hasn't manually scrolled up
-          if (
-            currentDistanceFromBottom <
-              SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD ||
-            !manualScrollStateRef.current
-          ) {
-            forceScrollToBottomRef.current()
-          }
+  useEffect(() => {
+    if (
+      messagesVisible &&
+      forceScrollToBottomRef.current &&
+      hasOptimisticMessages
+    ) {
+      // Check if user has manually scrolled up before forcing scroll
+      const scrollContainer = messagesScrollViewRef.current
+      if (scrollContainer) {
+        const currentDistanceFromBottom =
+          scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight
+
+        // Only auto-scroll if user is near bottom or hasn't manually scrolled up
+        if (
+          currentDistanceFromBottom < SCROLL_CONSTANTS.NEAR_BOTTOM_THRESHOLD ||
+          !manualScrollStateRef.current
+        ) {
+          forceScrollToBottomRef.current()
         }
       }
     }
-  }, [messagesVisible, messages])
+  }, [messagesVisible, hasOptimisticMessages])
 
-  // Force scroll to bottom when new optimistic messages are added (user sending new message)
+  // Force scroll to bottom when a new optimistic message is added (user sending new message)
   useEffect(() => {
-    const currentMessageCount = messages.length
-    const previousMessageCount = previousMessageCountRef.current
-
-    // Check if a new message was added (message count increased)
-    if (currentMessageCount > previousMessageCount && currentMessageCount > 0) {
-      // Check if the newest message (first in array) is optimistic
-      const newestMessage = messages[0]
-      const isNewOptimisticMessage = newestMessage?.isOptimistic === true
-
-      if (isNewOptimisticMessage && forceScrollToBottomRef.current) {
-        // Force scroll to bottom for new messages
-        forceScrollToBottomRef.current()
-        // Extra persistence for new messages
-        const timeout = setTimeout(() => {
-          if (forceScrollToBottomRef.current) {
-            forceScrollToBottomRef.current()
-          }
-        }, SCROLL_CONSTANTS.NEW_MESSAGE_SCROLL_DELAY)
-        addTimeout(timeout)
-      }
+    if (optimisticMessage && forceScrollToBottomRef.current) {
+      // Force scroll to bottom for new optimistic message
+      forceScrollToBottomRef.current()
+      // Extra persistence for new messages
+      const timeout = setTimeout(() => {
+        if (forceScrollToBottomRef.current) {
+          forceScrollToBottomRef.current()
+        }
+      }, SCROLL_CONSTANTS.NEW_MESSAGE_SCROLL_DELAY)
+      addTimeout(timeout)
     }
-
-    // Update the previous message count
-    previousMessageCountRef.current = currentMessageCount
-  }, [messages, addTimeout])
+  }, [optimisticMessage, addTimeout])
 
   // Force scroll to bottom when sync indicators appear (if user is at bottom)
   // This handles the case where sync indicators appear 1 second after messages complete
@@ -906,20 +878,14 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
 
     // Update the previous sync count
     previousSyncCountRef.current = currentSyncCount
-  }, [syncsInProgress, messages, addTimeout])
-
-  // Compute non-optimistic message IDs outside the effect
-  const nonOptimisticMessageIDs = useMemo(() => {
-    return messages
-      .filter((msg) => !msg.isOptimistic && msg.response)
-      .map((msg) => msg.id)
-  }, [messages])
+  }, [syncsInProgress, hasOptimisticMessages, addTimeout])
 
   useEffect(() => {
-    if (!isLoading && nonOptimisticMessageIDs.length > 0) {
-      checkStatuses(nonOptimisticMessageIDs)
+    // Don't check sync status while streaming - it causes excessive requests
+    if (!isLoading && !isStreaming && messages.length > 0) {
+      checkStatuses(messages.map((msg) => msg.id))
     }
-  }, [isLoading, nonOptimisticMessageIDs, checkStatuses]) // Now all dependencies are explicit
+  }, [isLoading, isStreaming, messages, checkStatuses])
 
   useEffect(() => {
     let isMounted = true
@@ -927,8 +893,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     if (!isLoading && messages.length > 0) {
       requestAnimationFrame(() => {
         if (!isMounted) return
-
-        if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        if (isMobile && isIOS) {
           const timeout = setTimeout(() => {
             if (isMounted) {
               setMessagesVisible(true)
@@ -946,7 +911,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     return () => {
       isMounted = false
     }
-  }, [isLoading, messages, isMobile, addTimeout])
+  }, [isLoading, messages, isMobile, isIOS, addTimeout])
 
   const handleScrollToTop = useCallback(() => {
     if (
@@ -1005,50 +970,8 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     }
   }, [shouldFetchNext, fetchNextPage, addTimeout])
 
-  const handleCopy = useCallback(
-    (message: any, type: "prompt" | "response" = "prompt") => {
-      const textToCopy = type === "prompt" ? message.prompt : message.response
-      if (!textToCopy) {
-        toast.error("No content to copy")
-        return
-      }
-
-      navigator.clipboard.writeText(textToCopy).then(
-        () => {
-          toast.success("Copied to clipboard")
-        },
-        (err) => {
-          console.error("Could not copy text: ", err)
-          toast.error("Failed to copy text")
-        }
-      )
-    },
-    []
-  )
-
-  const handleMessageDelete = useCallback(
-    async (message: any) => {
-      if (!message.id) {
-        console.error("Cannot delete message: missing ID")
-        toast.error("Failed to delete message")
-        return
-      }
-      try {
-        confirmMemoryDeletion(message.id, {
-          onSuccess: () => {
-            refetch()
-          },
-        })
-      } catch (error) {
-        console.error("Error deleting message:", error)
-        toast.error("Failed to delete message")
-      }
-    },
-    [confirmMemoryDeletion, refetch]
-  )
-
   const handleShowMemories = useCallback(
-    async (message: any) => {
+    async (message: OptimisticMemory) => {
       try {
         await showMemoryNetwork(message)
       } catch (error) {
@@ -1058,20 +981,6 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
     },
     [showMemoryNetwork]
   )
-
-  // Use the externally passed ref for scroll position detection
-  useEffect(() => {
-    if (ref) {
-      // If a ref is passed from parent, use it to access internal scrolling functionality
-      if (typeof ref === "function") {
-        // Function refs get called with the DOM element
-        ref(detectScrollToTopRef.current)
-      } else if (ref.current !== undefined) {
-        // Object refs need their .current property assigned
-        ref.current = detectScrollToTopRef.current
-      }
-    }
-  }, [ref])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -1106,7 +1015,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
           onScrollToTopRef={detectScrollToTopRef}
           forceScrollToBottomRef={forceScrollToBottomRef}
           scrollContainerRefExternal={messagesScrollViewRef}
-          messages={messages}
+          hasOptimisticMessages={hasOptimisticMessages}
           onManualScrollStateChange={(isManualScrolling) => {
             manualScrollStateRef.current = isManualScrolling
           }}
@@ -1115,56 +1024,37 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
             transition: UI_CONSTANTS.OPACITY_TRANSITION,
           }}
         >
+          {/* Render server messages */}
           {messages
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((message: any, index: number) => {
-              const isUser =
-                message.prompt && !message.prompt.includes("SYSTEM:")
-              const isLast = index === messages.length - 1
-
+            .map((message, index) => {
               const syncState = syncsInProgress.get(message.id)
               const showSync = !!syncState
               const syncStage = syncState?.stage || 1
 
               return (
                 <div key={message.id || index} className="message-pair">
-                  {message.prompt && isUser && (
+                  {message.input && message.input.length > 0 && (
                     <ChatMessage
-                      content={message.prompt}
-                      timestamp={
-                        message.timestamp
-                          ? new Date(message.timestamp).getTime()
-                          : Date.now()
-                      }
+                      inputParts={message.input}
+                      timestamp={message.timestamp}
                       isUser={true}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
                       menuProps={{
                         id: message.id,
-                        onCopy: () => handleCopy(message, "prompt"),
-                        onDelete: () => handleMessageDelete(message),
                         onShowMemories: () => handleShowMemories(message),
                       }}
-                      showSyncIndicator={showSync}
-                      syncStage={syncStage}
+                      showSyncIndicator={false}
+                      syncStage={1}
                     />
                   )}
 
-                  {message.response && (
+                  {/* Assistant message (output) - always render if there's output content */}
+                  {message.output && message.output.length > 0 && (
                     <ChatMessage
-                      content={message.response}
-                      timestamp={
-                        message.timestamp
-                          ? new Date(message.timestamp).getTime()
-                          : Date.now()
-                      }
+                      outputParts={message.output}
+                      timestamp={message.timestamp}
                       isUser={false}
-                      isLast={isLast}
-                      isOptimistic={message.isOptimistic}
                       menuProps={{
                         id: message.id,
-                        onCopy: () => handleCopy(message, "response"),
-                        onDelete: () => handleMessageDelete(message),
                         onShowMemories: () => handleShowMemories(message),
                       }}
                       showSyncIndicator={showSync}
@@ -1175,6 +1065,47 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
               )
             })
             .reverse()}
+
+          {optimisticMessage && (
+            <div key={optimisticMessage.id} className="message-pair">
+              {optimisticMessage.input &&
+                optimisticMessage.input.length > 0 && (
+                  <ChatMessage
+                    inputParts={optimisticMessage.input}
+                    timestamp={optimisticMessage.timestamp}
+                    isUser={true}
+                    isOptimistic={true}
+                    menuProps={{
+                      id: optimisticMessage.id,
+                      onShowMemories: () =>
+                        handleShowMemories(optimisticMessage),
+                    }}
+                    showSyncIndicator={false}
+                    syncStage={1}
+                  />
+                )}
+
+              {/* Assistant message (output) - always render if there's output content */}
+              {optimisticMessage.output &&
+                optimisticMessage.output.length > 0 && (
+                  <ChatMessage
+                    outputParts={optimisticMessage.output}
+                    timestamp={optimisticMessage.timestamp}
+                    isUser={false}
+                    isOptimistic={true}
+                    imagePartial={optimisticMessage.generatedImagePartial}
+                    imageURL={optimisticMessage.generatedImageURL}
+                    menuProps={{
+                      id: optimisticMessage.id,
+                      onShowMemories: () =>
+                        handleShowMemories(optimisticMessage),
+                    }}
+                    showSyncIndicator={false}
+                    syncStage={1}
+                  />
+                )}
+            </div>
+          )}
         </CustomScrollToBottom>
       ) : (
         <div className="empty-chat-message">
@@ -1183,7 +1114,7 @@ const ChatFeed = forwardRef<any, ChatFeedProps>(({}, ref) => {
       )}
     </div>
   )
-})
+}
 
 ChatFeed.displayName = "ChatFeed"
 export default ChatFeed
