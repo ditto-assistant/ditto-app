@@ -48,7 +48,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/eslint-plugin-query": "^5.83.1",
-    "@tanstack/react-query-devtools": "^5.84.1",
+    "@tanstack/react-query-devtools": "^5.87.4",
     "@testing-library/jest-dom": "^6.6.4",
     "@types/bun": "^1.2.19",
     "@types/node": "^24.2.0",
