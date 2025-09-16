@@ -88,6 +88,7 @@ export default function SendMessage({
     setImagePartial,
     setImageCompleted,
     addToolCalls,
+    addReasoningContent,
   } = useConversationHistory()
   const {
     message,
@@ -332,13 +333,21 @@ export default function SendMessage({
           input,
           textCallback: updateOptimisticResponse,
           onPairID: (id) => {
-            console.log("🚀 [SendMessage] Pair ID received:", id)
+            if (import.meta.env.DEV) {
+              console.log("🚀 [SendMessage] Pair ID received")
+            }
             finalizeOptimisticMessage(id)
             triggerSync(id)
           },
           onImagePartial: setImagePartial,
           onImageCompleted: setImageCompleted,
           onToolCalls: addToolCalls,
+          onReasoningContent: (content) => {
+            if (import.meta.env.DEV) {
+              console.log("🧠 [SendMessage] Reasoning content received")
+            }
+            addReasoningContent(content)
+          },
           personalitySummary: PersonalityStorage.getPersonalitySummary(userID),
           memoryStats: stringifyTopSubjects(memoryStats.topSubjects),
         })
@@ -385,6 +394,7 @@ export default function SendMessage({
       setImagePartial,
       setImageCompleted,
       addToolCalls,
+      addReasoningContent,
       triggerSync,
       onStop,
     ]

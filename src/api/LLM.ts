@@ -68,6 +68,7 @@ export async function prompt(opts: {
   onImagePartial?: (index: number, b64: string) => void
   onImageCompleted?: (url: string) => void
   onToolCalls?: (toolCalls: ToolCallInfo[]) => void
+  onReasoningContent?: (content: string) => void
   personalitySummary: string
   memoryStats?: string
 }): Promise<string> {
@@ -106,7 +107,11 @@ export async function prompt(opts: {
       onmessage: (message) => {
         try {
           const eventData = JSON.parse(message.data)
-          if (import.meta.env.DEV && message.event !== "chat.content") {
+          if (
+            import.meta.env.DEV &&
+            message.event !== "chat.content" &&
+            message.event !== "reasoning.content"
+          ) {
             console.log("🚀 [LLM] Event:", message.event)
           }
 
@@ -117,6 +122,17 @@ export async function prompt(opts: {
               const content = String(eventData?.data || "")
               if (opts.textCallback) opts.textCallback(content)
               responseChunks.push(content)
+              break
+
+            case "reasoning.content":
+              // Backend sends: EventContent{Data: reasoningContent} -> {"data": "reasoning text"}
+              const reasoningContent = String(eventData?.data || "")
+              console.log(
+                "🧠 [LLM] Received reasoning content:",
+                reasoningContent.slice(0, 100) + "..."
+              )
+              if (opts.onReasoningContent)
+                opts.onReasoningContent(reasoningContent)
               break
 
             case "pair.created":

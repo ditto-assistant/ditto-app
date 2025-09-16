@@ -42,6 +42,7 @@ interface ConversationContextType {
   setImagePartial: (index: number, b64: string) => void
   setImageCompleted: (url: string) => void
   addToolCalls: (toolCalls: ToolCallInfo[]) => void
+  addReasoningContent: (reasoningContent: string) => void
   cancelPrompt: () => Promise<boolean>
 }
 
@@ -211,9 +212,9 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
           }
         }
       )
-      console.log(
-        "🚀 [useConversationHistory] Finalized optimistic message, setting to null"
-      )
+      if (import.meta.env.DEV) {
+        console.log("🚀 [useConversationHistory] Finalized optimistic message")
+      }
       return null
     })
   }
@@ -266,6 +267,56 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const addReasoningContent = (reasoningContent: string) => {
+    if (!reasoningContent) return
+    if (import.meta.env.DEV) {
+      console.log("🧠 [useConversationHistory] Adding reasoning content")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
+
+      // Check if the last item is already a reasoning block
+      if (lastIndex >= 0 && currentOutput[lastIndex]?.type === "reasoning") {
+        // Append to existing reasoning block
+        const updatedOutput = [...currentOutput]
+        updatedOutput[lastIndex] = {
+          ...updatedOutput[lastIndex],
+          content: updatedOutput[lastIndex].content + reasoningContent,
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🔗 [useConversationHistory] Appended to existing reasoning block"
+          )
+        }
+
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      } else {
+        // Create new reasoning block
+        const reasoningContentEntry: ContentV2 = {
+          type: "reasoning",
+          content: reasoningContent,
+        }
+
+        if (import.meta.env.DEV) {
+          console.log("🆕 [useConversationHistory] Created new reasoning block")
+        }
+
+        return {
+          ...prev,
+          output: [...currentOutput, reasoningContentEntry],
+        }
+      }
+    })
+  }
+
   const value = {
     messages,
     optimisticMessage,
@@ -280,6 +331,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setImagePartial,
     setImageCompleted,
     addToolCalls,
+    addReasoningContent,
     cancelPrompt,
   }
 

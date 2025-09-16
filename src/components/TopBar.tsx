@@ -1,5 +1,11 @@
 import React from "react"
-import { MessageSquareWarning, Settings, Brain, UserCheck } from "lucide-react"
+import {
+  LucideIcon,
+  MessageSquareWarning,
+  Settings,
+  Brain,
+  UserCheck,
+} from "lucide-react"
 import { useModal } from "@/hooks/useModal"
 import { Button } from "@/components/ui/button"
 import {
@@ -8,107 +14,130 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import HeyDittoLogo from "@/components/ui/HeyDittoLogo"
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface TopBarProps {
-  // Removed onLiveModeClick prop
-  // Empty interface is intentional for future extensibility
-}
-
-const TopBar: React.FC<TopBarProps> = () => {
+// Main TopBar Component
+const TopBar: React.FC = () => {
   const modal = useModal()
-  const openFeedbackModal = modal.createOpenHandler("feedback")
-  const openSettingsModal = modal.createOpenHandler("settings")
-  const openMemoriesModal = modal.createOpenHandler("memories")
-
-  const topBarClasses = cn(
-    "top-bar w-full backdrop-blur-md border-b border-border/50",
-    "px-4 py-3 flex items-center justify-between relative z-10",
-    "bg-[var(--header-background)]"
-  )
-
-  const iconButtonClasses = cn(
-    "h-10 w-10 rounded-full hover:bg-accent hover:scale-105",
-    "transition-all duration-200 group"
-  )
 
   return (
-    <header role="banner" className={topBarClasses}>
+    <header
+      role="banner"
+      className={cn(
+        "top-bar w-full backdrop-blur-md border-b border-border/50",
+        "px-4 py-4 flex items-center justify-between relative z-10",
+        "bg-[var(--header-background)]"
+      )}
+    >
       {/* Left side - Feedback and Memories buttons */}
-      <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={openFeedbackModal}
-              aria-label="Send feedback"
-              className={iconButtonClasses}
-            >
-              <MessageSquareWarning className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Feedback</TooltipContent>
-        </Tooltip>
+      <TopBarButtonGroup>
+        <TopBarIconButton
+          icon={MessageSquareWarning}
+          tooltip="Feedback"
+          onClick={modal.createOpenHandler("feedback")}
+          ariaLabel="Send feedback"
+        />
+        <TopBarIconButton
+          icon={Brain}
+          tooltip="Memories"
+          onClick={modal.createOpenHandler("memories")}
+          ariaLabel="Open memories dashboard"
+        />
+      </TopBarButtonGroup>
 
-        {/* Live Mode Button removed */}
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={openMemoriesModal}
-              aria-label="Open memories dashboard"
-              className={iconButtonClasses}
-            >
-              <Brain className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Memories</TooltipContent>
-        </Tooltip>
-      </div>
-
-      {/* Center - Hey Ditto Words Logo */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
-        <HeyDittoLogo className="h-8" />
-      </div>
+      {/* Center - Hey Ditto Combined Logo */}
+      <TopBarLogo />
 
       {/* Right - Personality and Settings buttons */}
-      <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={modal.createOpenHandler("personalityAssessments")}
-              aria-label="View personality assessments"
-              className={iconButtonClasses}
-            >
-              <UserCheck className="h-5 w-5 text-purple-600 group-hover:text-purple-500 transition-colors" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">My Personality</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={openSettingsModal}
-              aria-label="Open settings"
-              className={iconButtonClasses}
-            >
-              <Settings className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Settings</TooltipContent>
-        </Tooltip>
-      </div>
+      <TopBarButtonGroup>
+        <TopBarIconButton
+          icon={UserCheck}
+          tooltip="My Personality"
+          onClick={modal.createOpenHandler("personalityAssessments")}
+          ariaLabel="View personality assessments"
+          iconClassName="h-5 w-5 text-purple-600 group-hover:text-purple-500 transition-colors"
+        />
+        <TopBarIconButton
+          icon={Settings}
+          tooltip="Settings"
+          onClick={modal.createOpenHandler("settings")}
+          ariaLabel="Open settings"
+        />
+      </TopBarButtonGroup>
     </header>
   )
+}
+
+// TopBar Icon Button Component
+interface TopBarIconButtonProps {
+  icon: LucideIcon
+  tooltip: string
+  onClick: () => void
+  ariaLabel: string
+  iconClassName?: string
+}
+
+const TopBarIconButton: React.FC<TopBarIconButtonProps> = ({
+  icon: Icon,
+  tooltip,
+  onClick,
+  ariaLabel,
+  iconClassName = "h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors",
+}) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          aria-label={ariaLabel}
+          className={cn(
+            "h-10 w-10 rounded-full hover:bg-accent hover:scale-105",
+            "transition-all duration-200 group"
+          )}
+        >
+          <Icon className={iconClassName} />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{tooltip}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+// TopBar Logo Component
+const TopBarLogo: React.FC = () => {
+  return (
+    <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+      <picture>
+        {/* Desktop: Large logo for wide screens */}
+        <source
+          media="(min-width: 1024px)"
+          srcSet="/assets/logos/heyditto-icon-words-96.png"
+        />
+        {/* Tablet: Medium logo for medium screens */}
+        <source
+          media="(min-width: 640px)"
+          srcSet="/assets/logos/heyditto-icon-words-64.png"
+        />
+        {/* Mobile: Compact logo for narrow screens */}
+        <img
+          src="/assets/logos/heyditto-icon-words-48.png"
+          alt="Hey Ditto"
+          className="h-8 sm:h-10 lg:h-12 w-auto"
+          loading="eager"
+        />
+      </picture>
+    </div>
+  )
+}
+
+// TopBar Button Group Component
+interface TopBarButtonGroupProps {
+  children: React.ReactNode
+}
+
+const TopBarButtonGroup: React.FC<TopBarButtonGroupProps> = ({ children }) => {
+  return <div className="flex items-center gap-2">{children}</div>
 }
 
 export default TopBar

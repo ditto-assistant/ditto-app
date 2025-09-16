@@ -182,10 +182,10 @@ function App() {
                                         <UpdateNotification />
 
                                         <ToasterWrapper />
-                                        <ReactQueryDevtools
+                                        {/* <ReactQueryDevtools
                                           buttonPosition="top-left"
                                           initialIsOpen={false}
-                                        />
+                                        /> */}
                                       </ModalProvider>
                                     </FontSizeProvider>
                                   </ThemeProvider>

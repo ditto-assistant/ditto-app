@@ -9,6 +9,7 @@ export type ContentTypeV2 =
   | "audio/wav"
   | "audio/mp3"
   | "tool_call"
+  | "reasoning"
 
 export interface ToolCallData {
   id: string

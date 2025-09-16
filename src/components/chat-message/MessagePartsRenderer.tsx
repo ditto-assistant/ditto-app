@@ -1,6 +1,6 @@
 import MarkdownRenderer from "../MarkdownRenderer"
 import { ContentV2 } from "@/api/getMemories"
-import { Wrench, Play, Volume2, FileText, Pause } from "lucide-react"
+import { Wrench, Play, Volume2, FileText, Pause, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useState, useRef, useEffect } from "react"
@@ -149,6 +149,28 @@ const MessagePartsRenderer: React.FC<MessagePartsRendererProps> = ({
                 <pre className="whitespace-pre-wrap break-words">
                   {JSON.stringify(args, null, 2)}
                 </pre>
+              </div>
+            </div>
+          </div>
+        )
+      case "reasoning":
+        return (
+          <div
+            key={key}
+            className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-800"
+          >
+            <Brain
+              size={16}
+              className="mt-0.5 text-blue-600 dark:text-blue-400"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  Reasoning:
+                </span>
+              </div>
+              <div className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                <MarkdownRenderer>{part.content}</MarkdownRenderer>
               </div>
             </div>
           </div>

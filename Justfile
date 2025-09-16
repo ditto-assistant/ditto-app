@@ -17,7 +17,7 @@ bs: build-dev serve
 
 format:
 	bun run format
-alias f := format
+alias fmt := format
 
 # push a new tag to the remote repository
 tag-latest:
