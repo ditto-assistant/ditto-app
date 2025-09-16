@@ -127,10 +127,6 @@ export async function prompt(opts: {
             case "reasoning.content":
               // Backend sends: EventContent{Data: reasoningContent} -> {"data": "reasoning text"}
               const reasoningContent = String(eventData?.data || "")
-              console.log(
-                "🧠 [LLM] Received reasoning content:",
-                reasoningContent.slice(0, 100) + "..."
-              )
               if (opts.onReasoningContent)
                 opts.onReasoningContent(reasoningContent)
               break
