@@ -122,7 +122,7 @@ const MessagePartsRenderer: React.FC<MessagePartsRendererProps> = ({
           <img
             key={key}
             src={part.content}
-            alt={`${keyPrefix} image`}
+            alt={part.alt || `${keyPrefix} image`}
             className="rounded-md border border-border max-w-full"
             draggable={false}
           />

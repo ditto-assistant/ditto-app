@@ -66,7 +66,7 @@ export async function prompt(opts: {
   textCallback?: TextCallback | null
   onPairID?: (pairID: string) => void
   onImagePartial?: (index: number, b64: string) => void
-  onImageCompleted?: (url: string) => void
+  onImageCompleted?: (url: string, alt?: string) => void
   onToolCalls?: (toolCalls: ToolCallInfo[]) => void
   onReasoningContent?: (content: string) => void
   personalitySummary: string
@@ -145,16 +145,15 @@ export async function prompt(opts: {
               break
 
             case "image.completed":
-              // Backend sends: EventContent{Data: {"url": "..."}} -> {"data": {"url": "..."}}
+              // Backend sends: EventContent{Data: {"url": "...", "alt": "..."}} -> {"data": {"url": "...", "alt": "..."}}
               const url = String(eventData?.data?.url || "")
-              if (url) opts.onImageCompleted?.(url)
+              const alt = String(eventData?.data?.alt || "")
+              if (url) opts.onImageCompleted?.(url, alt)
               break
 
             case "tool.calls":
               // Backend sends: EventContent{Data: [ToolCallInfo]} -> {"data": [{"id": "...", "name": "...", "args": {...}}]}
-              const toolCalls: ToolCallInfo[] = Array.isArray(eventData?.data)
-                ? eventData.data
-                : []
+              const toolCalls: ToolCallInfo[] = eventData?.data ?? []
               if (toolCalls.length > 0) opts.onToolCalls?.(toolCalls)
               break
 

@@ -340,7 +340,15 @@ export default function SendMessage({
             triggerSync(id)
           },
           onImagePartial: setImagePartial,
-          onImageCompleted: setImageCompleted,
+          onImageCompleted: (url, alt) => {
+            if (import.meta.env.DEV) {
+              console.log("🖼️ [SendMessage] Image completed", {
+                url,
+                alt,
+              })
+            }
+            setImageCompleted(url, alt)
+          },
           onToolCalls: addToolCalls,
           onReasoningContent: (content) => {
             if (import.meta.env.DEV) {

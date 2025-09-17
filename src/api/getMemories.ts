@@ -25,6 +25,8 @@ export interface ContentV2 {
   annotations?: unknown
   id?: string
   originalFilename?: string
+  // image-specific properties
+  alt?: string
 }
 
 export interface Memory {

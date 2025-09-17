@@ -40,7 +40,7 @@ interface ConversationContextType {
   updateOptimisticResponse: (responseChunk: string) => void
   finalizeOptimisticMessage: (finalizedPairId: string) => void
   setImagePartial: (index: number, b64: string) => void
-  setImageCompleted: (url: string) => void
+  setImageCompleted: (url: string, alt?: string) => void
   addToolCalls: (toolCalls: ToolCallInfo[]) => void
   addReasoningContent: (reasoningContent: string) => void
   cancelPrompt: () => Promise<boolean>
@@ -232,14 +232,23 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const setImageCompleted = (url: string) => {
+  const setImageCompleted = (url: string, alt?: string) => {
     if (!url) return
     setOptimisticMessage((prev) => {
       if (!prev) return prev
+
+      // Add the image to the output array during streaming
+      const imageContent: ContentV2 = {
+        type: "image",
+        content: url,
+        alt: alt || "Generated image",
+      }
+
       return {
         ...prev,
         generatedImagePartial: undefined,
         generatedImageURL: url,
+        output: [...(prev.output || []), imageContent],
       }
     })
   }
