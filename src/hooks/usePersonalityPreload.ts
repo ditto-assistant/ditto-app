@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react"
-import { PersonalityStorage } from "@/utils/personalityStorage"
+import { PersonalityStorage } from "@/lib/personalityStorage"
 import { routes } from "@/firebaseConfig"
 import { auth } from "@/lib/firebase"
 

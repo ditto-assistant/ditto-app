@@ -1,5 +1,5 @@
 import React, { Component, createContext, useContext, useState } from "react"
-import { handleLazyLoadError } from "@/utils/updateService"
+import { handleLazyLoadError } from "@/lib/updateService"
 
 // Error boundary context
 interface ErrorBoundaryContextType {

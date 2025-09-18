@@ -1,26 +1,27 @@
+import { createContext, useContext, ReactNode, useState } from "react"
 import {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useCallback,
-  useEffect,
-  useMemo,
-} from "react"
-import { useInfiniteQuery } from "@tanstack/react-query"
+  useInfiniteQuery,
+  useQueryClient,
+  InfiniteData,
+} from "@tanstack/react-query"
 import { useAuth, useAuthToken } from "./useAuth"
 import { BASE_URL } from "@/firebaseConfig"
 import { Memory } from "@/api/getMemories"
+import { cancelPrompt, type PromptV2Content } from "@/api/LLM"
 
 interface ConversationResponse {
-  messages: Memory[]
+  items: Memory[]
   nextCursor: string
 }
 
-interface OptimisticMemory extends Memory {
+import { ToolCallInfo } from "@/api/LLM"
+import { ContentV2 } from "@/api/getMemories"
+
+export interface OptimisticMemory extends Omit<Memory, "prompt" | "response"> {
   isOptimistic?: boolean
-  streamingResponse?: string
-  imageURL?: string
+  // Progressive image generation support
+  generatedImagePartial?: string
+  generatedImageURL?: string
 }
 
 type InfiniteQueryResult = ReturnType<
@@ -28,20 +29,24 @@ type InfiniteQueryResult = ReturnType<
 >
 
 interface ConversationContextType {
-  messages: OptimisticMemory[]
+  messages: Memory[]
+  optimisticMessage: OptimisticMemory | null
   isLoading: InfiniteQueryResult["isLoading"]
   isFetchingNextPage: InfiniteQueryResult["isFetchingNextPage"]
   hasNextPage: InfiniteQueryResult["hasNextPage"]
   fetchNextPage: InfiniteQueryResult["fetchNextPage"]
   refetch: InfiniteQueryResult["refetch"]
-  addOptimisticMessage: (userPrompt: string, imageURL?: string) => string
-  updateOptimisticResponse: (pairId: string, responseChunk: string) => void
-  finalizeOptimisticMessage: (
-    pairId: string,
-    finalResponse: string,
-    forceRemove?: boolean
-  ) => void
-  clearOptimisticMessages: () => void
+  addOptimisticMessage: (input: PromptV2Content[]) => string
+  updateOptimisticResponse: (responseChunk: string) => void
+  finalizeOptimisticMessage: (finalizedPairId: string) => void
+  setImagePartial: (index: number, b64: string) => void
+  setImageCompleted: (url: string, alt?: string) => void
+  addToolCalls: (toolCalls: ToolCallInfo[]) => void
+  addToolCallProgress: (toolCallData: any) => void
+  addToolCallCompleted: (id: string, name: string) => void
+  addReasoningContent: (reasoningContent: string) => void
+  setReasoningComplete: () => void
+  cancelPrompt: () => Promise<boolean>
 }
 
 const ConversationContext = createContext<ConversationContextType | null>(null)
@@ -49,9 +54,9 @@ const ConversationContext = createContext<ConversationContextType | null>(null)
 export function ConversationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const tok = useAuthToken()
-  const [optimisticMessages, setOptimisticMessages] = useState<
-    OptimisticMemory[]
-  >([])
+  const queryClient = useQueryClient()
+  const [optimisticMessage, setOptimisticMessage] =
+    useState<OptimisticMemory | null>(null)
 
   const {
     data,
@@ -69,14 +74,12 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       if (!user?.uid) {
         throw new Error("No user ID found")
       }
-      const params = new URLSearchParams({
-        userId: user?.uid || "",
-        limit: "5",
-      })
+      const url = new URL(`${BASE_URL}/api/v2/users/${user.uid}/conversations`)
+      url.searchParams.set("limit", "5")
       if (pageParam) {
-        params.set("cursor", pageParam as string)
+        url.searchParams.set("cursor", pageParam as string)
       }
-      const response = await fetch(`${BASE_URL}/v1/conversations?${params}`, {
+      const response = await fetch(url.toString(), {
         headers: {
           Authorization: `Bearer ${tok.data}`,
         },
@@ -92,246 +95,416 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     enabled: !!user?.uid && !!tok.data,
   })
 
-  // Memoize server messages to prevent unnecessary re-renders
-  const serverMessages = useMemo(
-    () => data?.pages.flatMap((page) => page.messages) || [],
-    [data?.pages]
-  )
-
-  // Enhanced debug logging for message state (disabled in production)
-  useEffect(() => {
-    // Removed verbose logging
-  }, [serverMessages, optimisticMessages])
-
-  // Keep track of which messages have been finalized to avoid premature cleanup
-  // This only removes optimistic messages that have been fully finalized and saved to server
-  useEffect(() => {
-    // Skip if we don't have both types of messages
-    if (serverMessages.length === 0 || optimisticMessages.length === 0) {
-      return
-    }
-
-    // If we have any non-finalized optimistic messages, don't do cleanup yet
-    // This ensures tool responses stay visible during processing
-    const hasActiveOptimisticMessages = optimisticMessages.some(
-      (msg) => msg.isOptimistic === true
-    )
-    if (hasActiveOptimisticMessages) {
-      return
-    }
-
-    // Find and remove optimistic messages that have been finalized and saved to server
-    // Only remove finalized messages (isOptimistic === false) that exist on the server
-    const messagesToRemove = optimisticMessages.filter(
-      (optMsg) =>
-        // Only consider non-optimistic messages for removal
-        optMsg.isOptimistic === false &&
-        // And only if they exist on the server
-        serverMessages.some((serverMsg) => serverMsg.prompt === optMsg.prompt)
-    )
-
-    if (messagesToRemove.length > 0) {
-      setOptimisticMessages((prev) =>
-        prev.filter(
-          (msg) => !messagesToRemove.some((toRemove) => toRemove.id === msg.id)
-        )
-      )
-    }
-  }, [serverMessages, optimisticMessages])
-
-  // Cleanup stale optimistic messages
-  useEffect(() => {
-    // Only run if we have optimistic messages
-    if (optimisticMessages.length > 0) {
-      // Look for optimistic messages that are older than 2 minutes
-      const twoMinutesAgo = Date.now() - 2 * 60 * 1000
-
-      const staleMessages = optimisticMessages.filter((msg) => {
-        // Check if message is older than 2 minutes and still marked as optimistic
-        const isStale =
-          msg.isOptimistic === true &&
-          (msg.timestamp ? msg.timestamp.getTime() : 0) < twoMinutesAgo
-        return isStale
-      })
-
-      // If we have stale messages, remove them
-      if (staleMessages.length > 0) {
-        setOptimisticMessages((prev) =>
-          prev.filter(
-            (msg) => !staleMessages.some((stale) => stale.id === msg.id)
-          )
-        )
-      }
-
-      // Also remove finalized messages after they've been in the array for a while
-      // This helps clean up the transition state
-      const finalizedTimeout = Date.now() - 30 * 1000 // 30 seconds
-      const finalizedMessages = optimisticMessages.filter((msg) => {
-        return (
-          msg.isOptimistic === false &&
-          (msg.timestamp ? msg.timestamp.getTime() : 0) < finalizedTimeout
-        )
-      })
-
-      if (finalizedMessages.length > 0) {
-        setOptimisticMessages((prev) =>
-          prev.filter(
-            (msg) => !finalizedMessages.some((final) => final.id === msg.id)
-          )
-        )
-      }
-    }
-  }, [optimisticMessages])
-
-  // Filter out optimistic messages that have been persisted to the server
-  // More aggressive filtering to prevent duplicates
-  const filteredOptimisticMessages = optimisticMessages.filter((optMsg) => {
-    // Keep non-optimistic messages in the list temporarily (they'll be removed after a refetch cycle)
-    if (optMsg.isOptimistic === false) {
-      // If we've marked it as no longer optimistic but it's still in our array,
-      // keep it for this render cycle to prevent flickering
-      return true
-    }
-
-    // Check if this optimistic message has been persisted to the server
-    const matchingServerMsg = serverMessages.find((serverMsg) => {
-      // Match only by exact ID (not by content)
-      // This ensures uniquely generated message IDs don't get filtered out
-      if (serverMsg.id === optMsg.id) {
-        return true
-      }
-
-      return false
-    })
-
-    return !matchingServerMsg
-  })
-
-  // Combine server and optimistic messages, with optimistic messages at the beginning (most recent)
-  const messages = [...filteredOptimisticMessages, ...serverMessages]
+  const messages = data?.pages.flatMap((page) => page.items) || []
 
   // Add a new optimistic message pair (user prompt + empty assistant response)
-  const addOptimisticMessage = useCallback(
-    (userPrompt: string, imageURL?: string): string => {
-      const timestamp = Date.now()
-      const tempPairId = `optimistic-${timestamp}`
+  const addOptimisticMessage = (input: PromptV2Content[]): string => {
+    const timestamp = Date.now()
+    const tempPairId = `optimistic-${timestamp}`
 
-      const newOptimisticMessages: OptimisticMemory[] = [
-        {
-          id: tempPairId,
-          prompt: userPrompt,
-          response: "",
-          timestamp: new Date(timestamp),
-          isOptimistic: true,
-          streamingResponse: "",
-          imageURL,
-          score: 0,
-          vector_distance: 0,
-          depth: 0,
-        },
-      ]
+    const newOptimisticMessage: OptimisticMemory = {
+      id: tempPairId,
+      // New v2 structure only
+      input: input,
+      output: [],
+      timestamp: new Date(timestamp),
+      isOptimistic: true,
+      score: 0,
+      vector_distance: 0,
+      depth: 0,
+    }
 
-      setOptimisticMessages((prev) => [...newOptimisticMessages, ...prev])
-      return tempPairId
-    },
-    []
-  )
+    setOptimisticMessage(newOptimisticMessage)
+    return tempPairId
+  }
 
   // Update the streaming response of an optimistic message
-  const updateOptimisticResponse = useCallback(
-    (pairId: string, responseChunk: string) => {
-      setOptimisticMessages((prev) => {
-        const messageExists = prev.some((msg) => msg.id === pairId)
-        if (!messageExists) {
-          return prev
-        }
+  const updateOptimisticResponse = (responseChunk: string) => {
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
 
-        return prev.map((msg) =>
-          msg.id === pairId
-            ? {
-                ...msg,
-                streamingResponse:
-                  (msg.streamingResponse || "") + responseChunk,
-                response: (msg.streamingResponse || "") + responseChunk,
-              }
-            : msg
-        )
-      })
-    },
-    []
-  )
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
+
+      // If no output yet, create first text content
+      if (currentOutput.length === 0) {
+        return {
+          ...prev,
+          output: [{ type: "text" as const, content: responseChunk }],
+        }
+      }
+
+      // If last item is text, append to it
+      if (currentOutput[lastIndex]?.type === "text") {
+        const updatedOutput = [...currentOutput]
+        updatedOutput[lastIndex] = {
+          ...updatedOutput[lastIndex],
+          content: updatedOutput[lastIndex].content + responseChunk,
+        }
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      }
+
+      // If last item is not text (e.g., tool call), append new text content
+      return {
+        ...prev,
+        output: [
+          ...currentOutput,
+          { type: "text" as const, content: responseChunk },
+        ],
+      }
+    })
+  }
 
   // Finalize an optimistic message by setting its final response
-  // For tool-based responses, we want to maintain the optimistic state until we get the final tool response
-  const finalizeOptimisticMessage = useCallback(
-    (pairId: string, finalResponse: string, forceRemove = false) => {
-      // Handle force remove signal from tool completion
-      if (forceRemove) {
-        setOptimisticMessages((prev) => prev.filter((msg) => msg.id !== pairId))
-        return
+  const finalizeOptimisticMessage = (finalizedPairId: string) => {
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+      // Convert optimistic message to final Memory format
+      const finalizedMessage: Memory = {
+        id: finalizedPairId, // Use the finalized pairId instead of optimistic ID
+        input: prev.input,
+        output: prev.output,
+        timestamp: prev.timestamp,
+        score: prev.score,
+        vector_distance: prev.vector_distance,
+        depth: prev.depth,
+      }
+      // Update the cached data directly without refetching
+      queryClient.setQueryData(
+        ["conversations", user?.uid, tok.data],
+        (oldData: InfiniteData<ConversationResponse> | undefined) => {
+          if (!oldData) return oldData
+
+          // Add the finalized message to the first page (most recent)
+          if (oldData.pages.length === 0) {
+            // If no pages exist, create the first page
+            return {
+              ...oldData,
+              pages: [
+                {
+                  items: [finalizedMessage],
+                  nextCursor: "",
+                },
+              ],
+            }
+          }
+
+          // Check if the finalized message already exists in the first page (React Strict Mode)
+          const firstPageItems = oldData.pages[0].items
+          const messageExists = firstPageItems[0]?.id === finalizedPairId
+          if (messageExists) {
+            // Message already exists, return old data without modification
+            return oldData
+          }
+
+          // Create new pages array with only the first page modified
+          const newPages = [
+            {
+              ...oldData.pages[0],
+              items: [finalizedMessage, ...oldData.pages[0].items],
+            },
+            ...oldData.pages.slice(1), // Keep other pages as-is (shallow copy is fine)
+          ]
+
+          return {
+            ...oldData,
+            pages: newPages,
+          }
+        }
+      )
+      if (import.meta.env.DEV) {
+        console.log("🚀 [useConversationHistory] Finalized optimistic message")
+      }
+      return null
+    })
+  }
+
+  // Image generation progressive updates (partial frames)
+  const setImagePartial = (_index: number, b64: string) => {
+    if (!b64) return
+    const dataUrl = `data:image/png;base64,${b64}`
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        generatedImagePartial: dataUrl,
+      }
+    })
+  }
+
+  const setImageCompleted = (url: string, alt?: string) => {
+    if (!url) return
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      // Add the image to the output array during streaming
+      const imageContent: ContentV2 = {
+        type: "image",
+        content: url,
+        alt: alt || "Generated image",
       }
 
-      setOptimisticMessages((prev) => {
-        const messageExists = prev.some((msg) => msg.id === pairId)
-        if (!messageExists) {
-          return prev
+      return {
+        ...prev,
+        generatedImagePartial: undefined, // Clear the partial when final image arrives
+        generatedImageURL: url,
+        output: [...(prev.output || []), imageContent],
+      }
+    })
+  }
+
+  const addToolCalls = (toolCalls: ToolCallInfo[]) => {
+    if (!toolCalls || toolCalls.length === 0) return
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // For each finished tool call, find the corresponding streaming block and finalize it
+      for (let i = 0; i < toolCalls.length; i++) {
+        let existingIndex = -1
+        for (let j = 0; j < updatedOutput.length; j++) {
+          if (
+            updatedOutput[j].type === "tool_call" &&
+            updatedOutput[j].toolCall?.id === toolCalls[i].id
+          ) {
+            existingIndex = j
+            break
+          }
         }
 
-        // Check if this is a tool response that needs to stay visible during processing
-        const hasTool =
-          finalResponse.includes("<OPENSCAD>") ||
-          finalResponse.includes("<HTML_SCRIPT>") ||
-          finalResponse.includes("<IMAGE_GENERATION>") ||
-          finalResponse.includes("<GOOGLE_SEARCH>")
+        if (existingIndex >= 0 && updatedOutput[existingIndex].toolCall) {
+          // Update existing streaming tool call with final parsed args
+          updatedOutput[existingIndex].toolCall!.args = toolCalls[i].args
 
-        // Keep the message in the optimistic state array but mark it differently
-        // For tool responses, we keep isOptimistic true to prevent premature cleanup
-        return prev.map((msg) =>
-          msg.id === pairId
-            ? {
-                ...msg,
-                response: finalResponse,
-                streamingResponse: undefined,
-                // For tool responses, keep isOptimistic true to prevent cleanup
-                // during tool processing
-                isOptimistic: hasTool,
-              }
-            : msg
-        )
-      })
-
-      // Only trigger refetch for non-tool responses
-      // Tools will handle their own refetch after processing completes
-      const hasTool =
-        finalResponse.includes("<OPENSCAD>") ||
-        finalResponse.includes("<HTML_SCRIPT>") ||
-        finalResponse.includes("<IMAGE_GENERATION>") ||
-        finalResponse.includes("<GOOGLE_SEARCH>")
-
-      if (!hasTool) {
-        // For regular responses without tools, trigger refetch and cleanup
-        setTimeout(() => {
-          refetch()
-
-          // Only remove after refetch for non-tool responses
-          setTimeout(() => {
-            setOptimisticMessages((prev) =>
-              prev.filter((msg) => msg.id !== pairId)
+          if (import.meta.env.DEV) {
+            console.log(
+              "🔗 [useConversationHistory] Finalized existing tool call with parsed args"
             )
-          }, 1000) // Wait 1 second after refetch to ensure data is loaded
-        }, 800)
-      }
-    },
-    [refetch]
-  )
+          }
+        } else {
+          // Create new tool call block if it doesn't exist (fallback)
+          const toolCallContent: ContentV2 = {
+            type: "tool_call",
+            content: "",
+            toolCall: {
+              id: toolCalls[i].id,
+              name: toolCalls[i].name,
+              args: toolCalls[i].args,
+            },
+          }
+          updatedOutput.push(toolCallContent)
 
-  // Clear all optimistic messages
-  const clearOptimisticMessages = useCallback(() => {
-    setOptimisticMessages([])
-  }, [])
+          if (import.meta.env.DEV) {
+            console.log(
+              "🆕 [useConversationHistory] Created new finalized tool call block"
+            )
+          }
+        }
+      }
+
+      return {
+        ...prev,
+        output: updatedOutput,
+      }
+    })
+  }
+
+  const addToolCallProgress = (toolCallData: any) => {
+    if (!toolCallData) return
+    if (import.meta.env.DEV) {
+      console.log("🔧 [useConversationHistory] Adding tool call progress data")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
+
+      // Check if the last item is already a tool call with the same ID
+      if (
+        lastIndex >= 0 &&
+        currentOutput[lastIndex]?.type === "tool_call" &&
+        currentOutput[lastIndex]?.toolCall?.id === toolCallData.id
+      ) {
+        // Update existing tool call block with raw streaming text
+        const updatedOutput = [...currentOutput]
+        if (updatedOutput[lastIndex].toolCall) {
+          // Store raw arguments text during streaming, don't parse JSON yet
+          updatedOutput[lastIndex].toolCall.rawArguments =
+            toolCallData.arguments || ""
+          if (toolCallData.name) {
+            updatedOutput[lastIndex].toolCall.name = toolCallData.name
+          }
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🔗 [useConversationHistory] Updated existing tool call block with progress"
+          )
+        }
+
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      } else {
+        // Create new tool call block with raw streaming data
+        const toolCallContentEntry: ContentV2 = {
+          type: "tool_call",
+          content: "",
+          toolCall: {
+            id: toolCallData.id || "",
+            name: toolCallData.name || "",
+            // Store raw arguments during streaming
+            rawArguments: toolCallData.arguments || "",
+            args: {}, // Will be populated when tool call finishes
+          },
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🆕 [useConversationHistory] Created new tool call block with progress"
+          )
+        }
+
+        return {
+          ...prev,
+          output: [...currentOutput, toolCallContentEntry],
+        }
+      }
+    })
+  }
+
+  const addToolCallCompleted = (id: string, name: string) => {
+    if (!id) return
+    if (import.meta.env.DEV) {
+      console.log("✅ [useConversationHistory] Tool call completed", {
+        id,
+        name,
+      })
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // Find the tool call with matching ID and mark it as completed
+      for (let i = 0; i < updatedOutput.length; i++) {
+        if (
+          updatedOutput[i].type === "tool_call" &&
+          updatedOutput[i].toolCall?.id === id
+        ) {
+          // Parse the raw arguments if they exist
+          const toolCall = updatedOutput[i].toolCall
+          if (toolCall?.rawArguments) {
+            try {
+              const args = JSON.parse(toolCall.rawArguments)
+              toolCall.args = args
+              delete toolCall.rawArguments // Clean up raw arguments
+            } catch (e) {
+              console.warn("Failed to parse tool call arguments", e)
+            }
+          }
+          break
+        }
+      }
+
+      return {
+        ...prev,
+        output: updatedOutput,
+      }
+    })
+  }
+
+  const addReasoningContent = (reasoningContent: string) => {
+    if (!reasoningContent) return
+    if (import.meta.env.DEV) {
+      console.log("🧠 [useConversationHistory] Adding reasoning content")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
+
+      // Check if the last item is already a reasoning block
+      if (lastIndex >= 0 && currentOutput[lastIndex]?.type === "reasoning") {
+        // Append to existing reasoning block
+        const updatedOutput = [...currentOutput]
+        updatedOutput[lastIndex] = {
+          ...updatedOutput[lastIndex],
+          content: updatedOutput[lastIndex].content + reasoningContent,
+          isStreaming: true, // Mark as streaming
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🔗 [useConversationHistory] Appended to existing reasoning block"
+          )
+        }
+
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      } else {
+        // Create new reasoning block
+        const reasoningContentEntry: ContentV2 = {
+          type: "reasoning",
+          content: reasoningContent,
+          isStreaming: true, // Mark as streaming
+        }
+
+        if (import.meta.env.DEV) {
+          console.log("🆕 [useConversationHistory] Created new reasoning block")
+        }
+
+        return {
+          ...prev,
+          output: [...currentOutput, reasoningContentEntry],
+        }
+      }
+    })
+  }
+
+  const setReasoningComplete = () => {
+    if (import.meta.env.DEV) {
+      console.log("✅ [useConversationHistory] Reasoning complete")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // Find the last reasoning block and mark it as complete
+      for (let i = updatedOutput.length - 1; i >= 0; i--) {
+        if (updatedOutput[i].type === "reasoning") {
+          updatedOutput[i].isStreaming = false // No longer streaming
+          break
+        }
+      }
+
+      return {
+        ...prev,
+        output: updatedOutput,
+      }
+    })
+  }
 
   const value = {
     messages,
+    optimisticMessage,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
@@ -340,7 +513,14 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     addOptimisticMessage,
     updateOptimisticResponse,
     finalizeOptimisticMessage,
-    clearOptimisticMessages,
+    setImagePartial,
+    setImageCompleted,
+    addToolCalls,
+    addToolCallProgress,
+    addToolCallCompleted,
+    addReasoningContent,
+    setReasoningComplete,
+    cancelPrompt,
   }
 
   return (

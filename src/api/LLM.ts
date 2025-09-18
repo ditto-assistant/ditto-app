@@ -1,306 +1,223 @@
 import { ErrorPaymentRequired } from "@/types/errors"
 import { routes } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
+import { getUserLocalTime } from "@/lib/time"
+import { getDeviceID } from "@/lib/deviceId"
+import { fetchEventSource } from "@/lib/fetch-event-source"
 
-type Model = string // This should match the type from "../constants"
 type TextCallback = (text: string) => void
 
-interface PromptRequestBody {
-  userID: string
-  userPrompt: string
-  systemPrompt: string
-  model: Model
-  imageURL: string
+// Prompt V2 content payload to mirror backend types.Content minimally
+type PromptV2ContentType =
+  | "text"
+  | "image"
+  | "application/pdf"
+  | "audio/wav"
+  | "audio/mp3"
+
+export interface PromptV2Content {
+  type: PromptV2ContentType
+  content: string
 }
 
-// SSE event types for v2 prompt endpoint
-interface SSETextEvent {
-  type: "text"
-  data: string
+// Tool call information for streaming
+export interface ToolCallInfo {
+  id: string
+  name: string
+  args: Record<string, unknown>
 }
 
-interface SSEErrorEvent {
-  type: "error"
-  data: string
-}
+// Cancel an active prompt streaming request
+export async function cancelPrompt(): Promise<boolean> {
+  try {
+    const tok = await getToken()
+    if (tok.err) throw tok.err
+    if (!tok.ok) throw new Error("Unable to get token")
 
-interface SSEDoneEvent {
-  type: "done"
-}
+    const response = await fetch(routes.promptStop(tok.ok.userID), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
+    })
 
-type SSEEvent = SSETextEvent | SSEErrorEvent | SSEDoneEvent
-
-export async function promptLLM(
-  userPrompt: string,
-  systemPrompt: string,
-  model: Model = "gemini-1.5-flash",
-  imageURL: string = "",
-  textCallback: TextCallback | null = null
-): Promise<string> {
-  console.log("Sending prompt to LLM: ", model)
-  let responseMessage = ""
-  let retries = 0
-  const maxRetries = 3
-  const tok = await getToken()
-  if (tok.err) {
-    console.error(tok.err)
-    return "Error: Unable to get LLM response"
-  }
-  if (!tok.ok) {
-    return "Error: Unable to get LLM response"
-  }
-  while (retries < maxRetries) {
-    try {
-      const requestBody: PromptRequestBody = {
-        userID: tok.ok.userID,
-        userPrompt,
-        systemPrompt,
-        model,
-        imageURL,
-      }
-      const response = await fetch(routes.prompt, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tok.ok.token}`,
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      // Check for payment required error
-      if (response.status === 402) {
-        return "Error: Payment Required. Please check your token balance."
-      }
-
-      // Handle other error statuses
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      // Handle the response stream
-      const reader = response.body!.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-
-        // Process the response as a whole for now
-        if (textCallback) {
-          textCallback(chunk)
-        }
-
-        responseMessage += chunk
-      }
-
-      console.log(
-        `✅ [LLM] Completed streaming, total length: ${responseMessage.length} chars`
-      )
-      return responseMessage
-    } catch (error) {
-      console.error("Error in promptLLM:", error)
-      retries++
-      console.log("Retry: ", retries)
-
-      // If it's a payment error, return immediately
-      if (
-        (error instanceof Error && error.message?.includes("402")) ||
-        (error instanceof Error && error.message?.includes("Payment Required"))
-      ) {
-        return "Error: Payment Required. Please check your token balance."
-      }
+    if (response.status === 404) {
+      console.log("🛑 [LLM] No active stream to cancel")
+      return false
     }
-  }
-  console.error("Error in promptLLM: Max retries reached.")
-  return "An error occurred. Please try again."
-}
 
-export async function openaiImageGeneration(
-  prompt: string
-): Promise<string | Error> {
-  // Input validation for prompt
-  if (!prompt || typeof prompt !== "string") {
-    return new Error("Prompt is required and must be a valid string")
-  }
+    if (!response.ok) {
+      throw new Error(
+        `Failed to cancel prompt: ${response.status} ${response.statusText}`
+      )
+    }
 
-  if (prompt.length > 32000) {
-    return new Error("Prompt too long (max 32000 characters)")
-  }
-
-  const sanitizedPrompt = prompt.trim()
-  if (sanitizedPrompt.length === 0) {
-    return new Error("Prompt cannot be empty")
-  }
-
-  const tok = await getToken()
-  if (tok.err) {
-    return tok.err
-  }
-  if (!tok.ok) {
-    return new Error("Unable to get image generation")
-  }
-  const response = await fetch(routes.imageGeneration, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${tok.ok.token}`,
-    },
-    body: JSON.stringify({
-      userID: tok.ok.userID,
-      prompt: sanitizedPrompt,
-    }),
-  })
-  if (response.status === 402) {
-    return ErrorPaymentRequired
-  }
-  if (!response.ok) {
-    return new Error(`HTTP ${response.status}: ${response.statusText}`)
-  }
-  return await response.text()
-}
-
-// For request cancellation
-let abortController: AbortController | null = null
-
-export function cancelPromptLLMV2() {
-  if (abortController) {
-    console.log("🛑 [LLM] Cancelling prompt request")
-    abortController.abort()
-    abortController = null
+    console.log("🛑 [LLM] Prompt stream cancelled successfully")
     return true
+  } catch (error) {
+    console.error("🛑 [LLM] Error cancelling prompt:", error)
+    return false
   }
-  return false
 }
 
-export async function promptLLMV2(
-  userPrompt: string,
-  systemPrompt: string,
-  model: Model = "gemini-1.5-flash",
-  imageURL: string = "",
-  textCallback: TextCallback | null = null
-): Promise<string> {
-  console.log("Sending prompt to LLM V2: ", model)
-  let responseMessage = ""
-  let retries = 0
-  const maxRetries = 3
+// New simplified V2 caller that builds and sends `input` array (types.Content shape)
+export async function prompt(opts: {
+  input: PromptV2Content[]
+  textCallback?: TextCallback | null
+  onPairID?: (pairID: string) => void
+  onImagePartial?: (index: number, b64: string) => void
+  onImageCompleted?: (url: string, alt?: string) => void
+  onToolCalls?: (toolCalls: ToolCallInfo[]) => void
+  onToolCallProgress?: (toolCallData: any) => void
+  onToolCallCompleted?: (id: string, name: string) => void
+  onReasoningContent?: (content: string) => void
+  onReasoningComplete?: () => void
+  personalitySummary: string
+  memoryStats?: string
+}): Promise<string> {
+  const deviceID = getDeviceID()
+  const userLocalTime = getUserLocalTime()
+
+  // Use array for efficient string building instead of concatenation
+  const responseChunks: string[] = []
   const tok = await getToken()
-  if (tok.err) {
-    throw tok.err
-  }
-  if (!tok.ok) {
-    throw new Error("Unable to get LLM response")
-  }
+  if (tok.err) throw tok.err
+  if (!tok.ok) throw new Error("Unable to get token")
 
-  // Create a new AbortController for this request
-  abortController = new AbortController()
-  const signal = abortController.signal
-
-  while (retries < maxRetries) {
-    try {
-      const requestBody: PromptRequestBody = {
-        userID: tok.ok.userID,
-        userPrompt,
-        systemPrompt,
-        model,
-        imageURL,
-      }
-
-      const response = await fetch(routes.promptV2, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tok.ok.token}`,
-        },
-        body: JSON.stringify(requestBody),
-        signal, // Add the abort signal to the fetch request
-      })
-
-      if (response.status === 402) {
-        throw ErrorPaymentRequired
-      }
-
-      // Handle other error statuses
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      // Create an EventSource from the response
-      const reader = response.body!.getReader()
-      const decoder = new TextDecoder()
-
-      // Read and process the SSE stream
-      while (true) {
-        // Check if we've been aborted
-        if (signal.aborted) {
-          console.log("🛑 [LLM] Request was aborted during streaming")
-          throw new Error("Request cancelled")
-        }
-
-        const { value, done } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-
-        // Process the SSE events
-        const eventStrings = chunk.split("\n\n").filter(Boolean)
-
-        for (const eventString of eventStrings) {
-          if (!eventString.startsWith("data: ")) continue
-
-          try {
-            const eventData = JSON.parse(eventString.substring(6))
-            const event = eventData as SSEEvent
-
-            switch (event.type) {
-              case "text":
-                if (textCallback) {
-                  textCallback(event.data)
-                }
-                responseMessage += event.data
-                break
-              case "error":
-                console.error("Error from SSE stream:", event.data)
-                throw new Error(event.data)
-              case "done":
-                console.log("✅ [LLM] Completed SSE streaming")
-                break
-            }
-          } catch (error) {
-            console.error("Error parsing SSE event:", error, eventString)
-          }
-        }
-      }
-
-      console.log(
-        `✅ [LLM V2] Completed streaming, total length: ${responseMessage.length} chars`
-      )
-      // Clear the abortController since the request is complete
-      abortController = null
-      return responseMessage
-    } catch (error) {
-      // Check if this was an abort error
-      if (error instanceof Error && error.name === "AbortError") {
-        console.log("Request was aborted by user")
-        abortController = null
-        throw new Error("Request cancelled")
-      }
-
-      console.error("Error in promptLLMV2:", error)
-      retries++
-      console.log("Retry: ", retries)
-
-      // If it's a payment error, return immediately
-      if (
-        (error instanceof Error && error.message?.includes("402")) ||
-        (error instanceof Error && error.message?.includes("Payment Required"))
-      ) {
-        abortController = null
-        throw ErrorPaymentRequired
-      }
+  try {
+    const body = {
+      userID: tok.ok.userID,
+      input: opts.input,
+      personalitySummary: opts.personalitySummary,
+      userLocalTime,
+      deviceID,
+      memoryStats: opts.memoryStats ?? "",
     }
+
+    await fetchEventSource(routes.promptV2, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tok.ok.token}`,
+      },
+      openWhenHidden: true,
+      body: JSON.stringify(body),
+      onopen: async (response) => {
+        if (response.status === 402) throw ErrorPaymentRequired
+        if (!response.ok)
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      },
+      onmessage: (message) => {
+        try {
+          const eventData = JSON.parse(message.data)
+          if (
+            import.meta.env.DEV &&
+            message.event !== "chat.content" &&
+            message.event !== "reasoning.content" &&
+            message.event !== "tool.call.stream"
+          ) {
+            console.log("🚀 [LLM] Event:", message.event)
+          }
+
+          // Handle all SSE events based on the event type
+          switch (message.event) {
+            case "chat.content":
+              // Backend sends: EventContent{Data: delta} -> {"data": "text content"}
+              const content = String(eventData?.data || "")
+              if (opts.textCallback) opts.textCallback(content)
+              responseChunks.push(content)
+              break
+
+            case "reasoning.content":
+              // Backend sends: EventContent{Data: reasoningContent} -> {"data": "reasoning text"}
+              const reasoningContent = String(eventData?.data || "")
+              if (opts.onReasoningContent)
+                opts.onReasoningContent(reasoningContent)
+              break
+
+            case "reasoning.complete":
+              // Backend sends: EventContent{} -> {}
+              if (opts.onReasoningComplete) opts.onReasoningComplete()
+              break
+
+            case "tool.call.progress":
+              // Backend sends: EventContent{Data: {"id": "...", "name": "...", "arguments": "...", "type": "image_preview", "b64": "..."}}
+              const toolCallProgressData = eventData?.data
+              if (toolCallProgressData && opts.onToolCallProgress) {
+                opts.onToolCallProgress(toolCallProgressData)
+              }
+              break
+
+            case "tool.call.completed":
+              // Backend sends: EventContent{Data: {"id": "...", "name": "..."}} -> {"data": {"id": "...", "name": "..."}}
+              const toolCallCompletedData = eventData?.data
+              if (toolCallCompletedData && opts.onToolCallCompleted) {
+                const id = String(toolCallCompletedData.id || "")
+                const name = String(toolCallCompletedData.name || "")
+                if (id) opts.onToolCallCompleted(id, name)
+              }
+              break
+
+            case "pair.created":
+              // Backend sends: EventContent{ID: pairID} -> {"id": "pair-id"}
+              const pairId: string = String(eventData?.id || "")
+              if (pairId && opts.onPairID) opts.onPairID(pairId)
+              break
+
+            case "image.partial":
+              // Backend sends: EventContent{Data: {"index": 0, "b64": "..."}} -> {"data": {"index": 0, "b64": "..."}}
+              const idx = Number(eventData?.data?.index ?? 0)
+              const b64 = String(eventData?.data?.b64 || "")
+              if (!Number.isNaN(idx) && b64) opts.onImagePartial?.(idx, b64)
+              break
+
+            case "image.completed":
+              // Backend sends: EventContent{Data: {"url": "...", "alt": "..."}} -> {"data": {"url": "...", "alt": "..."}}
+              const url = String(eventData?.data?.url || "")
+              const alt = String(eventData?.data?.alt || "")
+              if (url) opts.onImageCompleted?.(url, alt)
+              break
+
+            case "tool.calls":
+              // Backend sends: EventContent{Data: [ToolCallInfo]} -> {"data": [{"id": "...", "name": "...", "args": {...}}]}
+              const toolCalls: ToolCallInfo[] = eventData?.data ?? []
+              if (toolCalls.length > 0) opts.onToolCalls?.(toolCalls)
+              break
+
+            case "error":
+              // Backend sends: EventContent{Message: msg} -> {"message": "error message"}
+              const msg: string = String(eventData?.message || message.data)
+              throw new Error(msg)
+
+            default:
+              console.warn("Unknown event: ", message.event)
+              break
+          }
+        } catch (e) {
+          console.error("Error parsing SSE event:", e, message.data)
+        }
+      },
+      onerror: (error) => {
+        if (
+          (error instanceof Error && error.message?.includes("402")) ||
+          (error instanceof Error &&
+            error.message?.includes("Payment Required"))
+        ) {
+          throw ErrorPaymentRequired
+        }
+        throw error
+      },
+    })
+
+    // If we get here, the streaming completed successfully
+    return responseChunks.join("")
+  } catch (error) {
+    if (
+      (error instanceof Error && error.message?.includes("402")) ||
+      (error instanceof Error && error.message?.includes("Payment Required"))
+    ) {
+      throw ErrorPaymentRequired
+    }
+    throw error
   }
-  abortController = null
-  throw new Error("promptLLMV2: Max retries reached.")
 }

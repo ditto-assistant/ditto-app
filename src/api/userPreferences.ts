@@ -1,7 +1,13 @@
 import { BASE_URL } from "@/firebaseConfig"
 import { getToken } from "@/api/auth"
-import { PreferredModels, UserSchema, User } from "./getUser"
-import { ToolPreferences, MemoryPreferences } from "@/types/llm"
+import {
+  PreferredModels,
+  UserSchema,
+  User,
+  ToolPreferences,
+  MemoryPreferences,
+  SpeechPreferences,
+} from "./getUser"
 
 // Special error for payment required
 export const ErrorPaymentRequired = new Error("Payment required")
@@ -12,6 +18,7 @@ export type UserPreferencesUpdate = {
   theme?: "light" | "dark" | "system"
   tools?: Partial<ToolPreferences>
   memory?: Partial<MemoryPreferences>
+  speech?: Partial<SpeechPreferences>
 }
 
 /**

@@ -10,7 +10,7 @@ export default defineConfig({
     //   enabled: true,
     // }),
     tailwindcss(),
-    react(),
+    react({ babel: { plugins: ["babel-plugin-react-compiler"] } }),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,

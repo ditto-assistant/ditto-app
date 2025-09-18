@@ -5,9 +5,11 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
 } from "react"
 import { usePromptStorage } from "@/hooks/usePromptStorage"
-import { debounce } from "@/utils/debounce"
+import { debounce } from "perfect-debounce"
 
 interface ComposeContextType {
   message: string
@@ -41,48 +43,48 @@ export const ComposeProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [promptData?.prompt])
 
-  // Debounced function to save to storage
-  const debouncedSave = useRef(
-    debounce((text: string) => {
-      savePrompt(text)
-    }, 500)
-  ).current
+  // Debounced save function
+  const debouncedSave = useMemo(
+    () => debounce((text: string) => savePrompt(text), 500),
+    [savePrompt]
+  )
 
   // Custom setter that updates local state immediately and debounces storage
-  const setMessage = (msg: string) => {
-    setLocalMessage(msg)
-    debouncedSave(msg)
-  }
+  const setMessage = useCallback(
+    (msg: string) => {
+      setLocalMessage(msg)
+      debouncedSave(msg)
+    },
+    [debouncedSave]
+  )
 
   // Function to append text to existing message
-  const appendToMessage = (textToAppend: string) => {
-    const newMessage = localMessage + textToAppend
-    setLocalMessage(newMessage)
-    debouncedSave(newMessage)
-  }
+  const appendToMessage = useCallback(
+    (textToAppend: string) => {
+      const newMessage = localMessage + textToAppend
+      setLocalMessage(newMessage)
+      debouncedSave(newMessage)
+    },
+    [localMessage, debouncedSave]
+  )
 
   const submitCallback = useRef<(() => void) | null>(null)
   const registerSubmitCallback = (callback: () => void) => {
     submitCallback.current = callback
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (submitCallback.current) {
       submitCallback.current()
     }
-  }
+  }, [])
 
-  const openComposeModal = () => setIsOpen(true)
-  const closeComposeModal = () => setIsOpen(false)
+  const openComposeModal = useCallback(() => setIsOpen(true), [])
+  const closeComposeModal = useCallback(() => setIsOpen(false), [])
 
   const [isWaitingForResponse, setIsWaitingForResponse] = React.useState(false)
 
-  // Clean up debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSave.cancel()
-    }
-  }, [debouncedSave])
+  // perfect-debounce handles cleanup internally
 
   return (
     <ComposeContext.Provider

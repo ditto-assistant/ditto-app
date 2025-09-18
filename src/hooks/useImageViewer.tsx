@@ -1,24 +1,31 @@
 import { createContext, useContext, useState, ReactNode } from "react"
-interface ImageViewerContextType {
-  imageUrl: string
-  setImageUrl: (url: string) => void
+
+interface MediaViewerContextType {
+  mediaUrl: string
+  setMediaUrl: (url: string) => void
 }
 
-const ImageViewerContext = createContext<ImageViewerContextType | null>(null)
+const MediaViewerContext = createContext<MediaViewerContextType | null>(null)
 
-export function ImageViewerProvider({ children }: { children: ReactNode }) {
-  const [imageUrl, setImageUrl] = useState("")
+export function MediaViewerProvider({ children }: { children: ReactNode }) {
+  const [mediaUrl, setMediaUrl] = useState("")
   return (
-    <ImageViewerContext.Provider value={{ imageUrl, setImageUrl }}>
+    <MediaViewerContext.Provider value={{ mediaUrl, setMediaUrl }}>
       {children}
-    </ImageViewerContext.Provider>
+    </MediaViewerContext.Provider>
   )
 }
 
-export function useImageViewer() {
-  const context = useContext(ImageViewerContext)
+// Legacy support - keep the old name for backward compatibility
+export const ImageViewerProvider = MediaViewerProvider
+
+export function useMediaViewer() {
+  const context = useContext(MediaViewerContext)
   if (!context) {
-    throw new Error("useImageViewer must be used within an ImageViewerProvider")
+    throw new Error("useMediaViewer must be used within a MediaViewerProvider")
   }
   return context
 }
+
+// Legacy support - keep the old name for backward compatibility
+export const useImageViewer = useMediaViewer

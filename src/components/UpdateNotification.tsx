@@ -4,7 +4,7 @@ import {
   applyUpdate,
   UPDATE_READY,
   UPDATE_ERROR,
-} from "@/utils/updateService"
+} from "@/lib/updateService"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { UpdateServiceState } from "@/types/common"
