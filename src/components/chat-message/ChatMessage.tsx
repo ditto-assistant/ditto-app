@@ -120,12 +120,12 @@ export default function ChatMessage({
                   <MessagePartsRenderer parts={outputParts} keyPrefix="out" />
                 )}
 
-                {/* Progressive image preview if present */}
-                {imagePartial && (
+                {/* Progressive image preview if present (only show if no final image) */}
+                {imagePartial && !imageURL && (
                   <img
                     src={imagePartial}
                     alt="Generating image..."
-                    className="mb-2 rounded-md border border-border max-w-full"
+                    className="mb-2 rounded-md border border-border max-w-full animate-pulse"
                     draggable={false}
                   />
                 )}

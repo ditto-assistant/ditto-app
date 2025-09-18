@@ -15,6 +15,7 @@ export interface ToolCallData {
   id: string
   name: string
   args: Record<string, unknown>
+  rawArguments?: string // Raw streaming text before JSON parsing
 }
 
 export interface ContentV2 {
@@ -27,6 +28,8 @@ export interface ContentV2 {
   originalFilename?: string
   // image-specific properties
   alt?: string
+  // reasoning-specific properties
+  isStreaming?: boolean
 }
 
 export interface Memory {

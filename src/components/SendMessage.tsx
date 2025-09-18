@@ -88,7 +88,10 @@ export default function SendMessage({
     setImagePartial,
     setImageCompleted,
     addToolCalls,
+    addToolCallProgress,
+    addToolCallCompleted,
     addReasoningContent,
+    setReasoningComplete,
   } = useConversationHistory()
   const {
     message,
@@ -350,11 +353,42 @@ export default function SendMessage({
             setImageCompleted(url, alt)
           },
           onToolCalls: addToolCalls,
+          onToolCallProgress: (toolCallData) => {
+            if (import.meta.env.DEV) {
+              console.log(
+                "🔧 [SendMessage] Tool call progress received",
+                toolCallData.type
+              )
+            }
+            // Handle image previews from tool call progress
+            if (toolCallData.type === "image_preview") {
+              const index = Number(toolCallData.index ?? 0)
+              const b64 = String(toolCallData.b64 || "")
+              if (!Number.isNaN(index) && b64) {
+                setImagePartial(index, b64)
+              }
+            } else {
+              // Handle regular tool call argument streaming
+              addToolCallProgress(toolCallData)
+            }
+          },
+          onToolCallCompleted: (id, name) => {
+            if (import.meta.env.DEV) {
+              console.log("✅ [SendMessage] Tool call completed", { id, name })
+            }
+            addToolCallCompleted(id, name)
+          },
           onReasoningContent: (content) => {
             if (import.meta.env.DEV) {
               console.log("🧠 [SendMessage] Reasoning content received")
             }
             addReasoningContent(content)
+          },
+          onReasoningComplete: () => {
+            if (import.meta.env.DEV) {
+              console.log("✅ [SendMessage] Reasoning complete")
+            }
+            setReasoningComplete()
           },
           personalitySummary: PersonalityStorage.getPersonalitySummary(userID),
           memoryStats: stringifyTopSubjects(memoryStats.topSubjects),
@@ -402,7 +436,10 @@ export default function SendMessage({
       setImagePartial,
       setImageCompleted,
       addToolCalls,
+      addToolCallProgress,
+      addToolCallCompleted,
       addReasoningContent,
+      setReasoningComplete,
       triggerSync,
       onStop,
     ]

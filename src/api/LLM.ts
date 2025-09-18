@@ -68,7 +68,10 @@ export async function prompt(opts: {
   onImagePartial?: (index: number, b64: string) => void
   onImageCompleted?: (url: string, alt?: string) => void
   onToolCalls?: (toolCalls: ToolCallInfo[]) => void
+  onToolCallProgress?: (toolCallData: any) => void
+  onToolCallCompleted?: (id: string, name: string) => void
   onReasoningContent?: (content: string) => void
+  onReasoningComplete?: () => void
   personalitySummary: string
   memoryStats?: string
 }): Promise<string> {
@@ -110,7 +113,8 @@ export async function prompt(opts: {
           if (
             import.meta.env.DEV &&
             message.event !== "chat.content" &&
-            message.event !== "reasoning.content"
+            message.event !== "reasoning.content" &&
+            message.event !== "tool.call.stream"
           ) {
             console.log("🚀 [LLM] Event:", message.event)
           }
@@ -129,6 +133,29 @@ export async function prompt(opts: {
               const reasoningContent = String(eventData?.data || "")
               if (opts.onReasoningContent)
                 opts.onReasoningContent(reasoningContent)
+              break
+
+            case "reasoning.complete":
+              // Backend sends: EventContent{} -> {}
+              if (opts.onReasoningComplete) opts.onReasoningComplete()
+              break
+
+            case "tool.call.progress":
+              // Backend sends: EventContent{Data: {"id": "...", "name": "...", "arguments": "...", "type": "image_preview", "b64": "..."}}
+              const toolCallProgressData = eventData?.data
+              if (toolCallProgressData && opts.onToolCallProgress) {
+                opts.onToolCallProgress(toolCallProgressData)
+              }
+              break
+
+            case "tool.call.completed":
+              // Backend sends: EventContent{Data: {"id": "...", "name": "..."}} -> {"data": {"id": "...", "name": "..."}}
+              const toolCallCompletedData = eventData?.data
+              if (toolCallCompletedData && opts.onToolCallCompleted) {
+                const id = String(toolCallCompletedData.id || "")
+                const name = String(toolCallCompletedData.name || "")
+                if (id) opts.onToolCallCompleted(id, name)
+              }
               break
 
             case "pair.created":

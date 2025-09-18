@@ -42,7 +42,10 @@ interface ConversationContextType {
   setImagePartial: (index: number, b64: string) => void
   setImageCompleted: (url: string, alt?: string) => void
   addToolCalls: (toolCalls: ToolCallInfo[]) => void
+  addToolCallProgress: (toolCallData: any) => void
+  addToolCallCompleted: (id: string, name: string) => void
   addReasoningContent: (reasoningContent: string) => void
+  setReasoningComplete: () => void
   cancelPrompt: () => Promise<boolean>
 }
 
@@ -246,7 +249,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
       return {
         ...prev,
-        generatedImagePartial: undefined,
+        generatedImagePartial: undefined, // Clear the partial when final image arrives
         generatedImageURL: url,
         output: [...(prev.output || []), imageContent],
       }
@@ -258,20 +261,165 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setOptimisticMessage((prev) => {
       if (!prev) return prev
 
-      // Create ContentV2 objects for all tool calls
-      const toolCallContents: ContentV2[] = toolCalls.map((toolCall) => ({
-        type: "tool_call",
-        content: "", // Tool calls don't have text content
-        toolCall: {
-          id: toolCall.id,
-          name: toolCall.name,
-          args: toolCall.args,
-        },
-      }))
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // For each finished tool call, find the corresponding streaming block and finalize it
+      for (let i = 0; i < toolCalls.length; i++) {
+        let existingIndex = -1
+        for (let j = 0; j < updatedOutput.length; j++) {
+          if (
+            updatedOutput[j].type === "tool_call" &&
+            updatedOutput[j].toolCall?.id === toolCalls[i].id
+          ) {
+            existingIndex = j
+            break
+          }
+        }
+
+        if (existingIndex >= 0 && updatedOutput[existingIndex].toolCall) {
+          // Update existing streaming tool call with final parsed args
+          updatedOutput[existingIndex].toolCall!.args = toolCalls[i].args
+
+          if (import.meta.env.DEV) {
+            console.log(
+              "🔗 [useConversationHistory] Finalized existing tool call with parsed args"
+            )
+          }
+        } else {
+          // Create new tool call block if it doesn't exist (fallback)
+          const toolCallContent: ContentV2 = {
+            type: "tool_call",
+            content: "",
+            toolCall: {
+              id: toolCalls[i].id,
+              name: toolCalls[i].name,
+              args: toolCalls[i].args,
+            },
+          }
+          updatedOutput.push(toolCallContent)
+
+          if (import.meta.env.DEV) {
+            console.log(
+              "🆕 [useConversationHistory] Created new finalized tool call block"
+            )
+          }
+        }
+      }
 
       return {
         ...prev,
-        output: [...(prev.output || []), ...toolCallContents],
+        output: updatedOutput,
+      }
+    })
+  }
+
+  const addToolCallProgress = (toolCallData: any) => {
+    if (!toolCallData) return
+    if (import.meta.env.DEV) {
+      console.log("🔧 [useConversationHistory] Adding tool call progress data")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const lastIndex = currentOutput.length - 1
+
+      // Check if the last item is already a tool call with the same ID
+      if (
+        lastIndex >= 0 &&
+        currentOutput[lastIndex]?.type === "tool_call" &&
+        currentOutput[lastIndex]?.toolCall?.id === toolCallData.id
+      ) {
+        // Update existing tool call block with raw streaming text
+        const updatedOutput = [...currentOutput]
+        if (updatedOutput[lastIndex].toolCall) {
+          // Store raw arguments text during streaming, don't parse JSON yet
+          updatedOutput[lastIndex].toolCall.rawArguments =
+            toolCallData.arguments || ""
+          if (toolCallData.name) {
+            updatedOutput[lastIndex].toolCall.name = toolCallData.name
+          }
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🔗 [useConversationHistory] Updated existing tool call block with progress"
+          )
+        }
+
+        return {
+          ...prev,
+          output: updatedOutput,
+        }
+      } else {
+        // Create new tool call block with raw streaming data
+        const toolCallContentEntry: ContentV2 = {
+          type: "tool_call",
+          content: "",
+          toolCall: {
+            id: toolCallData.id || "",
+            name: toolCallData.name || "",
+            // Store raw arguments during streaming
+            rawArguments: toolCallData.arguments || "",
+            args: {}, // Will be populated when tool call finishes
+          },
+        }
+
+        if (import.meta.env.DEV) {
+          console.log(
+            "🆕 [useConversationHistory] Created new tool call block with progress"
+          )
+        }
+
+        return {
+          ...prev,
+          output: [...currentOutput, toolCallContentEntry],
+        }
+      }
+    })
+  }
+
+  const addToolCallCompleted = (id: string, name: string) => {
+    if (!id) return
+    if (import.meta.env.DEV) {
+      console.log("✅ [useConversationHistory] Tool call completed", {
+        id,
+        name,
+      })
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // Find the tool call with matching ID and mark it as completed
+      for (let i = 0; i < updatedOutput.length; i++) {
+        if (
+          updatedOutput[i].type === "tool_call" &&
+          updatedOutput[i].toolCall?.id === id
+        ) {
+          // Parse the raw arguments if they exist
+          const toolCall = updatedOutput[i].toolCall
+          if (toolCall?.rawArguments) {
+            try {
+              const args = JSON.parse(toolCall.rawArguments)
+              toolCall.args = args
+              delete toolCall.rawArguments // Clean up raw arguments
+            } catch (e) {
+              console.warn("Failed to parse tool call arguments", e)
+            }
+          }
+          break
+        }
+      }
+
+      return {
+        ...prev,
+        output: updatedOutput,
       }
     })
   }
@@ -295,6 +443,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         updatedOutput[lastIndex] = {
           ...updatedOutput[lastIndex],
           content: updatedOutput[lastIndex].content + reasoningContent,
+          isStreaming: true, // Mark as streaming
         }
 
         if (import.meta.env.DEV) {
@@ -312,6 +461,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         const reasoningContentEntry: ContentV2 = {
           type: "reasoning",
           content: reasoningContent,
+          isStreaming: true, // Mark as streaming
         }
 
         if (import.meta.env.DEV) {
@@ -322,6 +472,32 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
           ...prev,
           output: [...currentOutput, reasoningContentEntry],
         }
+      }
+    })
+  }
+
+  const setReasoningComplete = () => {
+    if (import.meta.env.DEV) {
+      console.log("✅ [useConversationHistory] Reasoning complete")
+    }
+
+    setOptimisticMessage((prev) => {
+      if (!prev) return prev
+
+      const currentOutput = prev.output || []
+      const updatedOutput = [...currentOutput]
+
+      // Find the last reasoning block and mark it as complete
+      for (let i = updatedOutput.length - 1; i >= 0; i--) {
+        if (updatedOutput[i].type === "reasoning") {
+          updatedOutput[i].isStreaming = false // No longer streaming
+          break
+        }
+      }
+
+      return {
+        ...prev,
+        output: updatedOutput,
       }
     })
   }
@@ -340,7 +516,10 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setImagePartial,
     setImageCompleted,
     addToolCalls,
+    addToolCallProgress,
+    addToolCallCompleted,
     addReasoningContent,
+    setReasoningComplete,
     cancelPrompt,
   }
 

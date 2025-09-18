@@ -1,7 +1,21 @@
 import MarkdownRenderer from "../MarkdownRenderer"
 import { ContentV2 } from "@/api/getMemories"
-import { Wrench, Play, Volume2, FileText, Pause, Brain } from "lucide-react"
+import {
+  Wrench,
+  Play,
+  Volume2,
+  FileText,
+  Pause,
+  Brain,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { useImageViewerHandler } from "@/hooks/useImageViewerHandler"
 import { useState, useRef, useEffect } from "react"
 
@@ -15,6 +29,16 @@ const MessagePartsRenderer: React.FC<MessagePartsRendererProps> = ({
   keyPrefix,
 }) => {
   const { handleImageClick } = useImageViewerHandler()
+  const [collapsedStates, setCollapsedStates] = useState<
+    Record<string, boolean>
+  >({})
+
+  const toggleCollapsed = (key: string) => {
+    setCollapsedStates((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }))
+  }
 
   const AudioPlayer = ({
     url,
@@ -130,50 +154,93 @@ const MessagePartsRenderer: React.FC<MessagePartsRendererProps> = ({
       case "tool_call":
         if (!part.toolCall) return null
         const { name, args } = part.toolCall
+        const toolCallKey = `${key}-tool-call`
+        const isToolCallOpen = collapsedStates[toolCallKey] || false
         return (
-          <div
+          <Collapsible
             key={key}
-            className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-border"
+            open={isToolCallOpen}
+            onOpenChange={() => toggleCollapsed(toolCallKey)}
           >
-            <Wrench size={16} className="mt-0.5 text-muted-foreground" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Tool Call:
-                </span>
-                <span className="text-sm font-mono bg-background px-2 py-0.5 rounded border">
-                  {name}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <pre className="whitespace-pre-wrap break-words">
-                  {JSON.stringify(args, null, 2)}
-                </pre>
-              </div>
+            <div className="bg-muted/50 rounded-md border border-border">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted/70 transition-colors">
+                  <Wrench size={16} className="text-muted-foreground" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Tool Call:
+                    </span>
+                    <span className="text-sm font-mono bg-background px-2 py-0.5 rounded border">
+                      {name}
+                    </span>
+                  </div>
+                  {isToolCallOpen ? (
+                    <ChevronDown size={16} className="text-muted-foreground" />
+                  ) : (
+                    <ChevronRight size={16} className="text-muted-foreground" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-3 pb-3">
+                <div className="text-xs text-muted-foreground">
+                  <pre className="whitespace-pre-wrap break-words font-mono">
+                    {
+                      part.toolCall.rawArguments
+                        ? part.toolCall.rawArguments // Show raw streaming text
+                        : JSON.stringify(args, null, 2) // Show pretty-printed JSON when finished
+                    }
+                  </pre>
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
         )
       case "reasoning":
+        const reasoningKey = `${key}-reasoning`
+        // Auto-open if streaming, auto-collapse if not streaming
+        const isReasoningStreaming = part.isStreaming ?? false
+        const isReasoningOpen =
+          collapsedStates[reasoningKey] !== undefined
+            ? collapsedStates[reasoningKey]
+            : isReasoningStreaming
         return (
-          <div
+          <Collapsible
             key={key}
-            className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-800"
+            open={isReasoningOpen}
+            onOpenChange={() => toggleCollapsed(reasoningKey)}
           >
-            <Brain
-              size={16}
-              className="mt-0.5 text-blue-600 dark:text-blue-400"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                  Reasoning:
-                </span>
-              </div>
-              <div className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
-                <MarkdownRenderer>{part.content}</MarkdownRenderer>
-              </div>
+            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-800">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors">
+                  <Brain
+                    size={16}
+                    className={`${isReasoningStreaming ? "animate-pulse" : ""} text-blue-600 dark:text-blue-400`}
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      {isReasoningStreaming ? "Thinking..." : "Thinking"}
+                    </span>
+                  </div>
+                  {isReasoningOpen ? (
+                    <ChevronDown
+                      size={16}
+                      className="text-blue-600 dark:text-blue-400"
+                    />
+                  ) : (
+                    <ChevronRight
+                      size={16}
+                      className="text-blue-600 dark:text-blue-400"
+                    />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-3 pb-3">
+                <div className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                  <MarkdownRenderer>{part.content}</MarkdownRenderer>
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
         )
       case "application/pdf":
         return (
